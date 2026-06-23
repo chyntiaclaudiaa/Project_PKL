@@ -15,11 +15,20 @@ const pool = require('./config/db');
 // Import Routes
 const authRoutes = require('./routes/authRoutes');
 const adminRoutes = require('./routes/adminRoutes');
+const dashboardRoutes = require("./routes/atasan_dashboardRoutes");
+const requestRoutes = require("./routes/atasan_requestRoutes");
+const commentRoutes = require("./routes/atasan_commentRoutes");
+const reportRoutes = require("./routes/atasan_reportRoutes");
+const atasanProfileRoutes = require(  "./routes/atasan_profileRoutes" );
 
 // Daftarkan API Routes ke Express Middleware
 app.use('/api/auth', authRoutes);
 app.use('/api/admin', adminRoutes);
-
+app.use("/api/dashboard", dashboardRoutes);
+app.use("/api/requests", requestRoutes);
+app.use("/api/comments", commentRoutes);
+app.use( "/api/report", reportRoutes);
+app.use( "/api/profile", atasanProfileRoutes);
 // Route testing dasar untuk memastikan API backend aktif
 app.get('/', (req, res) => {
     res.json({

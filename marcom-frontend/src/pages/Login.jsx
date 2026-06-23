@@ -22,10 +22,14 @@ const Login = () => {
             localStorage.setItem('user', JSON.stringify(user));
 
             // Arahkan halaman berdasarkan role pengguna
-            if (user.role === 'admin') {
-                navigate('/admin/dashboard');
-            } else {
-                navigate('/dashboard'); 
+            if (user.role === "admin") {
+                navigate("/admin/dashboard");
+            }
+            else if (user.role === "marcom_manager") {
+                navigate("/atasan/dashboard");
+            }
+            else {
+                navigate("/anggota/dashboard");
             }
         } catch (err) {
             setError(err.response?.data?.message || 'Terjadi kesalahan saat login.');
