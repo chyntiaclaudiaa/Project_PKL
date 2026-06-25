@@ -36,16 +36,27 @@ const createUser = async (req, res) => {
             return res.status(400).json({ message: 'Email sudah terdaftar di sistem!' });
         }
 
+        let finalRole = role;
+        const teksPengecekan = `${jabatan || ''} ${divisi || ''}`.toLowerCase();
+
+        if (teksPengecekan.includes('pimpinan') || teksPengecekan.includes('pemimpin') || teksPengecekan.includes('manager')) {
+            finalRole = 'marcom_manager'; 
+        } else {
+            if (role !== 'admin' && role !== 'marcom_manager') {
+                finalRole = 'marcom_member';
+            }
+        }
+
         // Hash password sementara sebelum disimpan ke database
         const saltRounds = 10;
         const hashedPassword = await bcrypt.hash(password, saltRounds);
 
-        // Simpan ke database
+        // Simpan ke database (Ganti parameter $4 menjadi finalRole)
         const newUser = await db.query(
             `INSERT INTO users (name, email, password, role, divisi, jabatan, status) 
              VALUES ($1, $2, $3, $4, $5, $6, $7) 
              RETURNING id, name, email, role, divisi, jabatan, status`,
-            [name, email, hashedPassword, role, divisi, jabatan, status || 'Aktif']
+            [name, email, hashedPassword, finalRole, divisi, jabatan, (status === null || status === undefined) ? 'Aktif' : status]
         );
 
         res.status(201).json({
@@ -59,27 +70,51 @@ const createUser = async (req, res) => {
 };
 
 // 3. Memperbarui data pengguna (Form Edit Pengguna)
+// 3. Memperbarui data pengguna (Form Edit Pengguna)
 const updateUser = async (req, res) => {
     const { id } = req.params;
-    const { name, email, role, divisi, jabatan, status } = req.body;
+    const { name, email, role, divisi, jabatan, status, password } = req.body; 
 
     try {
+        // 💡 TAHAP KUNCI: Otomatisasi penentuan role saat proses EDIT berdasarkan jabatan baru
+        let finalRole = role;
+        if (jabatan && (jabatan.toLowerCase().includes('pimpinan') || jabatan.toLowerCase().includes('pemimpin') || jabatan.toLowerCase().includes('manager'))) {
+            finalRole = 'marcom_manager'; // Otomatis ubah ke atasan/pimpinan di database
+        } else if (role !== 'admin') {
+            finalRole = 'marcom_member';  // Otomatis ubah ke anggota/staff di database
+        }
+
+        // SKENARIO A: Jika form mengirimkan password baru
+        if (password && password.trim() !== '') {
+            const saltRounds = 10;
+            const hashedPassword = await bcrypt.hash(password, saltRounds);
+
+            // Ganti parameter $3 menggunakan finalRole
+            const updatedUser = await db.query(
+                `UPDATE users 
+                 SET name = $1, email = $2, role = $3, divisi = $4, jabatan = $5, status = $6, password = $7 
+                 WHERE id = $8 
+                 RETURNING id, name, email, role, divisi, jabatan, status`,
+                [name, email, finalRole, divisi, jabatan, status, hashedPassword, id]
+            );
+
+            if (updatedUser.rows.length === 0) return res.status(404).json({ message: 'Pengguna tidak ditemukan!' });
+            return res.status(200).json({ message: 'Data dan Password pengguna berhasil diperbarui!', user: updatedUser.rows[0] });
+        } 
+        
+        // SKENARIO B: Jika password kosong (hanya update data profil)
+        // Ganti parameter $3 menggunakan finalRole
         const updatedUser = await db.query(
             `UPDATE users 
              SET name = $1, email = $2, role = $3, divisi = $4, jabatan = $5, status = $6 
              WHERE id = $7 
              RETURNING id, name, email, role, divisi, jabatan, status`,
-            [name, email, role, divisi, jabatan, status, id]
+            [name, email, finalRole, divisi, jabatan, status, id]
         );
 
-        if (updatedUser.rows.length === 0) {
-            return res.status(404).json({ message: 'Pengguna tidak ditemukan!' });
-        }
+        if (updatedUser.rows.length === 0) return res.status(404).json({ message: 'Pengguna tidak ditemukan!' });
+        res.status(200).json({ message: 'Data pengguna berhasil diperbarui!', user: updatedUser.rows[0] });
 
-        res.status(200).json({
-            message: 'Data pengguna berhasil diperbarui!',
-            user: updatedUser.rows[0]
-        });
     } catch (err) {
         console.error(err.message);
         res.status(500).json({ message: 'Gagal memperbarui data pengguna.' });
