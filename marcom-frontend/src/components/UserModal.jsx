@@ -9,11 +9,17 @@ const UserModal = ({
     onSubmit, 
     errorMsg 
 }) => {
-    // State lokal khusus untuk Modal Form
     const [showModalPassword, setShowModalPassword] = useState(false);
+    
     const [isDivisiDropdownOpen, setIsDivisiDropdownOpen] = useState(false);
     const [divisiSearch, setDivisiSearch] = useState('');
-    const dropdownRef = useRef(null);
+    const divisiRef = useRef(null);
+
+    const [isJabatanDropdownOpen, setIsJabatanDropdownOpen] = useState(false);
+    const jabatanRef = useRef(null);
+
+    const [isStatusDropdownOpen, setIsStatusDropdownOpen] = useState(false);
+    const statusRef = useRef(null);
 
     const divisiOptions = [
         'Divisi Audit Internal', 'Divisi Human Capital', 'Divisi Kepatuhan', 'Divisi Manajemen Risiko',
@@ -25,38 +31,61 @@ const UserModal = ({
         'Divisi Marketing Communication', 'UKK Internal Control Over Financial Report', 'Unit Kantor', 'Eksternal/lain-lain'
     ];
 
+    const jabatanOptions = [
+        'Staff/Anggota', 'Pemimpin Divisi', 'PJ. Pemimpin Divisi', 'Pemimpin Unit',
+        'PJ. Pemimpin Unit', 'Pemimpin Unit Kerja Khusus (UKK)', 'PJ. Pemimpin Unit Kerja Khusus (UKK)',
+        'Project Leader', 'Unit Kantor', 'Eksternal/Lain-lain'
+    ];
+
+    const statusOptions = ['Aktif', 'Nonaktif'];
+
     const filteredDivisi = divisiOptions.filter(d => d.toLowerCase().includes(divisiSearch.toLowerCase()));
 
-    // Handler klik di luar dropdown divisi
     useEffect(() => {
         function handleClickOutside(event) {
-            if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+            if (divisiRef.current && !divisiRef.current.contains(event.target)) {
                 setIsDivisiDropdownOpen(false);
+            }
+            if (jabatanRef.current && !jabatanRef.current.contains(event.target)) {
+                setIsJabatanDropdownOpen(false);
+            }
+            if (statusRef.current && !statusRef.current.contains(event.target)) {
+                setIsStatusDropdownOpen(false);
             }
         }
         document.addEventListener("mousedown", handleClickOutside);
         return () => document.removeEventListener("mousedown", handleClickOutside);
     }, []);
 
-    // Handler perubahan jabatan
     const handleJabatanChange = (selectedJabatan) => {
-        setFormData({
-            ...formData,
-            jabatan: selectedJabatan
-        });
+        setFormData({ ...formData, jabatan: selectedJabatan });
+        setIsJabatanDropdownOpen(false);
     };
 
     if (!isOpen) return null;
 
     return (
         <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-3xl shadow-2xl w-full max-w-xl overflow-visible border border-slate-100">
-                <div className="border-b border-gray-100 px-6 py-4 flex items-center justify-between bg-slate-50/50 rounded-t-3xl">
-                    <div>
-                        <h3 className="text-lg font-bold text-gray-900">{!isEdit ? 'Tambah Pengguna' : 'Edit Pengguna'}</h3>
-                        <p className="text-xs text-slate-400 mt-0.5">{!isEdit ? 'Buat akun pengguna baru sistem' : `Edit data: ${formData.name}`}</p>
+            <div className="bg-white rounded-3xl shadow-2xl w-full max-w-xl overflow-visible">
+                
+                <div className="bg-gradient-to-r from-[#e95723] to-[#ff8a65] px-6 py-5 flex items-center justify-between rounded-t-3xl">
+                    <div className="flex items-center space-x-2.5">
+                        {!isEdit ? (
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-5 h-5 text-white">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                            </svg>
+                        ) : (
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5 text-white">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" />
+                            </svg>
+                        )}
+                        <h3 className="text-md font-bold text-white tracking-wide">
+                            {!isEdit ? 'Tambah Pengguna' : 'Edit Pengguna'}
+                        </h3>
                     </div>
-                    <button onClick={onClose} className="text-slate-400 hover:text-gray-600 text-sm font-bold">✕ Batal</button>
+                    <button onClick={onClose} className="text-white/90 hover:text-white text-sm font-bold flex items-center transition-colors">
+                        ✕ Batal
+                    </button>
                 </div>
 
                 <form onSubmit={onSubmit} className="p-6 space-y-4 text-gray-800 relative">
@@ -92,33 +121,61 @@ const UserModal = ({
                                 </button>
                             </div>
                         </div>
-                        <div>
+
+                        <div className="relative" ref={jabatanRef}>
                             <label className="text-xs font-bold text-slate-600 block mb-1">Jabatan *</label>
-                            <select value={formData.jabatan || ''} onChange={(e) => handleJabatanChange(e.target.value)} className="w-full bg-white px-3 py-2 border border-gray-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-700" required>
-                                <option value="" disabled hidden>Pilih Jabatan...</option>
-                                <option value="Staff/Anggota">Staff/Anggota</option>
-                                <option value="Pemimpin Divisi">Pemimpin Divisi</option>
-                                <option value="PJ. Pemimpin Divisi">PJ. Pemimpin Divisi</option>
-                                <option value="Pemimpin Unit">Pemimpin Unit</option>
-                                <option value="PJ. Pemimpin Unit">PJ. Pemimpin Unit</option>
-                                <option value="Pemimpin Unit Kerja Khusus (UKK)">Pemimpin Unit Kerja Khusus (UKK)</option>
-                                <option value="PJ. Pemimpin Unit Kerja Khusus (UKK)">PJ. Pemimpin Unit Kerja Khusus (UKK)</option>
-                                <option value="Project Leader">Project Leader</option>
-                                <option value="Unit Kantor">Unit Kantor</option>
-                                <option value="Eksternal/Lain-lain">Eksternal/Lain-lain</option>
-                            </select>
+                            <div 
+                                onClick={() => setIsJabatanDropdownOpen(!isJabatanDropdownOpen)}
+                                className="w-full bg-white px-3 py-2 border border-gray-200 rounded-xl text-xs flex justify-between items-center cursor-pointer focus:outline-none text-gray-700 hover:border-blue-400 transition-colors"
+                            >
+                                <span className="truncate pr-2">{formData.jabatan || 'Pilih Jabatan...'}</span>
+                                <svg 
+                                    xmlns="http://www.w3.org/2000/svg" 
+                                    fill="none" 
+                                    viewBox="0 0 24 24" 
+                                    strokeWidth={2} 
+                                    stroke="currentColor" 
+                                    className={`w-4 h-4 text-slate-400 flex-shrink-0 transition-transform duration-300 ${isJabatanDropdownOpen ? 'rotate-180' : ''}`}
+                                >
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+                                </svg>
+                            </div>
+
+                            {isJabatanDropdownOpen && (
+                                <div className="absolute z-[999] w-full mt-1.5 bg-white border border-gray-200 rounded-xl shadow-xl max-h-56 overflow-y-auto animate-fadeIn">
+                                    <ul className="py-1">
+                                        {jabatanOptions.map((opt) => (
+                                            <li
+                                                key={opt}
+                                                onClick={() => handleJabatanChange(opt)}
+                                                className={`px-3 py-2 text-xs cursor-pointer transition-colors ${formData.jabatan === opt ? 'bg-blue-50 text-blue-700 font-bold' : 'text-gray-600 hover:bg-slate-50 hover:text-slate-900 font-medium'}`}
+                                            >
+                                                {opt}
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            )}
                         </div>
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">
-                        <div className="relative" ref={dropdownRef}>
+                        {/* Dropdown Kustom: Divisi */}
+                        <div className="relative" ref={divisiRef}>
                             <label className="text-xs font-bold text-slate-600 block mb-1">Divisi / Unit *</label>
                             <div 
                                 onClick={() => setIsDivisiDropdownOpen(!isDivisiDropdownOpen)}
                                 className="w-full bg-white px-3 py-2 border border-gray-200 rounded-xl text-xs flex justify-between items-center cursor-pointer focus:outline-none text-gray-700 hover:border-blue-400 transition-colors"
                             >
                                 <span className="truncate pr-2">{formData.divisi || 'Pilih Divisi...'}</span>
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4 text-slate-400 flex-shrink-0">
+                                <svg 
+                                    xmlns="http://www.w3.org/2000/svg" 
+                                    fill="none" 
+                                    viewBox="0 0 24 24" 
+                                    strokeWidth={2} 
+                                    stroke="currentColor" 
+                                    className={`w-4 h-4 text-slate-400 flex-shrink-0 transition-transform duration-300 ${isDivisiDropdownOpen ? 'rotate-180' : ''}`}
+                                >
                                     <path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
                                 </svg>
                             </div>
@@ -162,12 +219,43 @@ const UserModal = ({
                             )}
                         </div>
 
-                        <div>
+                        <div className="relative" ref={statusRef}>
                             <label className="text-xs font-bold text-slate-600 block mb-1">Status Akun *</label>
-                            <select value={formData.status || 'Aktif'} onChange={(e) => setFormData({...formData, status: e.target.value})} className="w-full bg-white px-3 py-2 border border-gray-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-700">
-                                <option value="Aktif">Aktif</option>
-                                <option value="Nonaktif">Nonaktif</option>
-                            </select>
+                            <div 
+                                onClick={() => setIsStatusDropdownOpen(!isStatusDropdownOpen)}
+                                className="w-full bg-white px-3 py-2 border border-gray-200 rounded-xl text-xs flex justify-between items-center cursor-pointer focus:outline-none text-gray-700 hover:border-blue-400 transition-colors"
+                            >
+                                <span className="truncate pr-2">{formData.status || 'Aktif'}</span>
+                                <svg 
+                                    xmlns="http://www.w3.org/2000/svg" 
+                                    fill="none" 
+                                    viewBox="0 0 24 24" 
+                                    strokeWidth={2} 
+                                    stroke="currentColor" 
+                                    className={`w-4 h-4 text-slate-400 flex-shrink-0 transition-transform duration-300 ${isStatusDropdownOpen ? 'rotate-180' : ''}`}
+                                >
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+                                </svg>
+                            </div>
+
+                            {isStatusDropdownOpen && (
+                                <div className="absolute z-[999] w-full mt-1.5 bg-white border border-gray-200 rounded-xl shadow-xl max-h-56 overflow-y-auto animate-fadeIn">
+                                    <ul className="py-1">
+                                        {statusOptions.map((opt) => (
+                                            <li
+                                                key={opt}
+                                                onClick={() => {
+                                                    setFormData({ ...formData, status: opt });
+                                                    setIsStatusDropdownOpen(false);
+                                                }}
+                                                className={`px-3 py-2 text-xs cursor-pointer transition-colors ${formData.status === opt || (!formData.status && opt === 'Aktif') ? 'bg-blue-50 text-blue-700 font-bold' : 'text-gray-600 hover:bg-slate-50 hover:text-slate-900 font-medium'}`}
+                                            >
+                                                {opt}
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            )}
                         </div>
                     </div>
 
