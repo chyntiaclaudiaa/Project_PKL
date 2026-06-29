@@ -1,5 +1,5 @@
 import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
-import "../../atasan_dashboard.css";
+import "../../style/atasan_dashboard.css";
 
 const CONFIG_WARNA = {
   "Menunggu": "var(--color-menunggu)",

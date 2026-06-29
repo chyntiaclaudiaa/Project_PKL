@@ -1,5 +1,5 @@
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid } from "recharts";
-import "../../atasan_dashboard.css";
+import "../../style/atasan_dashboard.css";
 
 export default function WorkloadBarCharts({ workload }) {
   const formattedData = workload.map(item => ({

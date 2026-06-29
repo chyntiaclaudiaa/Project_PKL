@@ -1,7 +1,6 @@
-import "../../atasan_dashboard.css";
+import "../../style/atasan_dashboard.css";
 
 export default function WorkloadTable({ data, globalTotal }) {
-  // Ambil total seluruh request sistem (keseluruhan tugas) sebagai pembagi global workload bar
   const totalSistem = Number(globalTotal || 0) > 0 ? Number(globalTotal) : 1;
 
   return (
@@ -47,7 +46,6 @@ export default function WorkloadTable({ data, globalTotal }) {
                       <span className="font-bold text-slate-800">{item.name}</span>
                     </td>
 
-                    {/* Kolom Progres */}
                     <td 
                       className="py-3 px-2 text-center font-bold"
                       style={{ color: "var(--color-diproses)" }}
@@ -55,7 +53,6 @@ export default function WorkloadTable({ data, globalTotal }) {
                       {progresReq}
                     </td>
 
-                    {/* Kolom Selesai */}
                     <td 
                       className="py-3 px-2 text-center font-bold"
                       style={{ color: "var(--color-selesai)" }}
@@ -63,7 +60,6 @@ export default function WorkloadTable({ data, globalTotal }) {
                       {selesaiReq}
                     </td>
 
-                    {/* Kolom Ditolak */}
                     <td 
                       className="py-3 px-2 text-center font-bold"
                       style={{ color: "var(--color-ditolak)" }}
@@ -71,12 +67,10 @@ export default function WorkloadTable({ data, globalTotal }) {
                       {ditolakReq}
                     </td>
 
-                    {/* Kolom Total */}
                     <td className="py-3 px-2 text-center text-slate-500 font-bold">
                       {totalReq}
                     </td>
 
-                    {/* Kolom Beban Kerja (Struktur Center Rapi) */}
                     <td className="py-3 px-4 text-center">
                       <div className="flex flex-col items-center justify-center gap-1.5 w-full max-w-[140px] mx-auto">
                         <div className="w-full bg-slate-100 rounded-full h-2 overflow-hidden">

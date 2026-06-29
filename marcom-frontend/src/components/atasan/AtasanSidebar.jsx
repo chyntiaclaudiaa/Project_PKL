@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { HouseIcon, Plus, ListIcon, LogOut, Users, User } from "lucide-react";
 import LogoBankSumut from "../../assets/Bank_Sumut.png"; 
-import "../../atasan_dashboard.css"; 
+import "../../style/atasan_dashboard.css";
 
 export default function AtasanSidebar({ activeMenu }) {
   const navigate = useNavigate();

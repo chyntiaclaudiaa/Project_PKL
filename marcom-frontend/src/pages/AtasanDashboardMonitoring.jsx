@@ -17,7 +17,7 @@ import {
   getCommentNotifications, 
   markNotificationAsRead,   
 } from "../services/atasan_dashboardService"; 
-import "../atasan_dashboard.css";
+import "../style/atasan_dashboard.css";
 
 export default function AtasanDashboardMonitoring() {
   const scrollRef = useRef(null);
