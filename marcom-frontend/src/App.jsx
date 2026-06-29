@@ -8,6 +8,13 @@ import InputRequest from './pages/InputRequest';
 import MyRequests from './pages/MyRequests';
 import Profile from './pages/Profile';
 import UploadResult from './pages/UploadResult';
+import AdminDashboard from './pages/AdminDashboard'; // 1. Sudah diimport aman
+import AtasanDashboardMonitoring from "./pages/AtasanDashboardMonitoring";
+import AtasanProtectedRoute from "./components/atasan/AtasanProtectedRoute";
+import AtasanRequestPage from "./pages/AtasanRequestPage";
+import AtasanRequestDetailPage from "./pages/AtasanRequestDetailPage";
+import AtasanReportPage from "./pages/AtasanReportPage";
+import AtasanProfilePage from "./pages/AtasanProfilePage";
 
 function App() {
   return (
@@ -16,6 +23,17 @@ function App() {
         <Route path="/login" element={<Login />} />
 
         <Route path="/admin/dashboard" element={<AdminDashboard />} />
+        {/* Dashboard Atasan */}
+        <Route path="/atasan/dashboard" element={  <AtasanProtectedRoute>  <AtasanDashboardMonitoring />  </AtasanProtectedRoute>  } />
+
+        {/* Semua Request */}
+        <Route  path="/atasan/request"  element={  <AtasanProtectedRoute>  <AtasanRequestPage />  </AtasanProtectedRoute>  } />
+
+        <Route  path="/atasan/request/:id"  element={ <AtasanProtectedRoute>   <AtasanRequestDetailPage />  </AtasanProtectedRoute> } />
+        
+        <Route path="/atasan/report" element={<AtasanReportPage />} />
+
+        <Route path="/atasan/profile" element={<AtasanProfilePage />} />
 
         <Route path="/anggota/dashboard" element={<MemberDashboard />} />
 

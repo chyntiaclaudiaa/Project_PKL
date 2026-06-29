@@ -1,6 +1,5 @@
 const express = require('express');
 const router = express.Router();
-// 1. Tambahkan updatePassword di baris import ini
 const { getAllUsers, createUser, updateUser, updatePassword } = require('../controllers/adminController');
 const { verifyToken, isAdmin } = require('../middleware/authMiddleware');
 

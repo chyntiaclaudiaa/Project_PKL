@@ -2,7 +2,6 @@ const db = require('../config/db');
 const bcrypt = require('bcrypt');
 const { shareMarcomFolderToUser, revokeMarcomFolderFromUser } = require('../services/googleDriveService');
 
-// 1. Mengambil semua data pengguna + Fitur Pencarian (Search)
 const getAllUsers = async (req, res) => {
     const { search } = req.query;
 
@@ -25,27 +24,34 @@ const getAllUsers = async (req, res) => {
     }
 };
 
-// 2. Menambah pengguna baru (Form Tambah Pengguna)
 const createUser = async (req, res) => {
     const { name, email, password, role, divisi, jabatan, status } = req.body;
 
     try {
-        // Validasi apakah email sudah terdaftar
         const emailCheck = await db.query('SELECT * FROM users WHERE email = $1', [email]);
         if (emailCheck.rows.length > 0) {
             return res.status(400).json({ message: 'Email sudah terdaftar di sistem!' });
         }
 
-        // Hash password
+        let finalRole = role;
+        const teksPengecekan = `${jabatan || ''} ${divisi || ''}`.toLowerCase();
+
+        if (teksPengecekan.includes('pimpinan') || teksPengecekan.includes('pemimpin') || teksPengecekan.includes('manager')) {
+            finalRole = 'marcom_manager'; 
+        } else {
+            if (role !== 'admin' && role !== 'marcom_manager') {
+                finalRole = 'marcom_member';
+            }
+        }
+
         const saltRounds = 10;
         const hashedPassword = await bcrypt.hash(password, saltRounds);
 
-        // Simpan ke database
         const newUser = await db.query(
             `INSERT INTO users (name, email, password, role, divisi, jabatan, status) 
              VALUES ($1, $2, $3, $4, $5, $6, $7) 
              RETURNING id, name, email, role, divisi, jabatan, status`,
-            [name, email, hashedPassword, role, divisi, jabatan, status || 'Aktif']
+            [name, email, hashedPassword, finalRole, divisi, jabatan, (status === null || status === undefined) ? 'Aktif' : status]
         );
 
         const createdUser = newUser.rows[0];
@@ -75,31 +81,53 @@ const createUser = async (req, res) => {
     }
 };
 
-// 3. Memperbarui data pengguna (Form Edit Pengguna)
 const updateUser = async (req, res) => {
     const { id } = req.params;
-    const { name, email, role, divisi, jabatan, status } = req.body;
+    const { name, email, role, divisi, jabatan, status, password } = req.body; 
 
     try {
-        // Cek user yang lama dulu
-        const oldUserResult = await db.query(
-            'SELECT email, role, status FROM users WHERE id = $1',
-            [id]
-        );
-
-        if (oldUserResult.rows.length === 0) {
+        const userCheck = await db.query('SELECT * FROM users WHERE id = $1', [id]);
+        if (userCheck.rows.length === 0) {
             return res.status(404).json({ message: 'Pengguna tidak ditemukan!' });
         }
+        
+        const existingUser = userCheck.rows[0];
 
-        const oldUser = oldUserResult.rows[0];
+        const finalName = name || existingUser.name;
+        const finalEmail = email || existingUser.email;
+        const finalDivisi = divisi !== undefined ? divisi : existingUser.divisi;
+        const finalJabatan = jabatan !== undefined ? jabatan : existingUser.jabatan;
+        const finalStatus = status !== undefined ? status : existingUser.status; // Mencegah status berubah nonaktif/NULL
+        let inputRole = role !== undefined ? role : existingUser.role;
 
-        // Update user
+        let finalRole = inputRole;
+        if (finalJabatan && (finalJabatan.toLowerCase().includes('pimpinan') || finalJabatan.toLowerCase().includes('pemimpin') || finalJabatan.toLowerCase().includes('manager'))) {
+            finalRole = 'marcom_manager'; 
+        } else if (inputRole !== 'admin') {
+            finalRole = 'marcom_member';  
+        }
+
+        if (password && password.trim() !== '') {
+            const saltRounds = 10;
+            const hashedPassword = await bcrypt.hash(password, saltRounds);
+
+            const updatedUser = await db.query(
+                `UPDATE users 
+                 SET name = $1, email = $2, role = $3, divisi = $4, jabatan = $5, status = $6, password = $7 
+                 WHERE id = $8 
+                 RETURNING id, name, email, role, divisi, jabatan, status`,
+                [finalName, finalEmail, finalRole, finalDivisi, finalJabatan, finalStatus, hashedPassword, id]
+            );
+
+            return res.status(200).json({ message: 'Data dan Password pengguna berhasil diperbarui!', user: updatedUser.rows[0] });
+        } 
+        
         const updatedUser = await db.query(
             `UPDATE users 
              SET name = $1, email = $2, role = $3, divisi = $4, jabatan = $5, status = $6 
              WHERE id = $7 
              RETURNING id, name, email, role, divisi, jabatan, status`,
-            [name, email, role, divisi, jabatan, status, id]
+            [finalName, finalEmail, finalRole, finalDivisi, finalJabatan, finalStatus, id]
         );
 
         const updatedUserData = updatedUser.rows[0];
@@ -142,7 +170,6 @@ const updateUser = async (req, res) => {
     }
 };
 
-// 4. Memperbarui password
 const updatePassword = async (req, res) => {
     const { id } = req.params;
     const { currentPassword, newPassword } = req.body;
