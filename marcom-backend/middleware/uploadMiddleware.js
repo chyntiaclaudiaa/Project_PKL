@@ -61,20 +61,3 @@ const upload = multer({
 
 module.exports = upload;
 
-/*
- * CATATAN (opsional):
- * Saat ini satu konfigurasi "upload" dipakai untuk support_file (dokumen)
- * DAN result_file (foto/video), jadi limit 200MB berlaku untuk keduanya.
- * Kalau mau dokumen tetap dibatasi kecil (misal 10MB) sementara video
- * boleh sampai 200MB, ganti jadi dua export:
- *
- *   const uploadDocument = multer({ storage, limits: { fileSize: 10 * 1024 * 1024 }, fileFilter: documentFilter });
- *   const uploadMedia    = multer({ storage, limits: { fileSize: 200 * 1024 * 1024 }, fileFilter: mediaFilter });
- *   module.exports = { uploadDocument, uploadMedia };
- *
- * lalu di requestRoutes.js:
- *   upload.single('support_file')        -> uploadDocument.single('support_file')
- *   upload.array('result_file', 10)      -> uploadMedia.array('result_file', 10)
- *
- * Bilang aja kalau mau aku buatkan versi terpisah ini.
- */

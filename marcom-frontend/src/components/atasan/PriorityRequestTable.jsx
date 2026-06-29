@@ -1,6 +1,5 @@
-import "../../atasan_dashboard.css";
+import "../../style/atasan_dashboard.css";
 
-// DIUBAH: Menghapus useNavigate dan menambahkan properti onOpenDetail
 export default function PriorityRequestTable({ data, onOpenDetail }) {
 
   const getStatusStyle = (status) => {

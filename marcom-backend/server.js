@@ -17,27 +17,25 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 const pool = require('./config/db');
 const authRoutes = require('./routes/authRoutes');
 const adminRoutes = require('./routes/adminRoutes');
-const requestRoutes = require('./routes/requestRoutes');
+const requestAnggota = require('./routes/requestRoutes');
 const profileRoutes = require('./routes/profileRoutes');
 const googleCalendarRoutes = require('./routes/googleCalendarRoutes');
 const dashboardRoutes = require("./routes/atasan_dashboardRoutes");
-const requestRoutes = require("./routes/atasan_requestRoutes");
+const requestAtasan = require("./routes/atasan_requestRoutes");
 const commentRoutes = require("./routes/atasan_commentRoutes");
 const reportRoutes = require("./routes/atasan_reportRoutes");
 const atasanProfileRoutes = require(  "./routes/atasan_profileRoutes" );
 
 app.use('/api/auth', authRoutes);
 app.use('/api/admin', adminRoutes);
-app.use('/api/requests', requestRoutes);
+app.use('/api/requests', requestAnggota);
 app.use('/api/profile', profileRoutes);
 app.use('/api/google', googleCalendarRoutes);
-
 app.use("/api/dashboard", dashboardRoutes);
-app.use("/api/requests", requestRoutes);
+app.use("/api/atasan", requestAtasan);
 app.use("/api/comments", commentRoutes);
 app.use( "/api/report", reportRoutes);
 app.use( "/api/profile", atasanProfileRoutes);
-// Route testing dasar untuk memastikan API backend aktif
 app.get('/', (req, res) => {
     res.json({
         message: 'Server MarCom (Content Marcom Engagement & Tracking System) API Berjalan Lancar!',
@@ -60,7 +58,6 @@ app.use((err, req, res, next) => {
 
 const PORT = process.env.PORT || 5000;
 
-// Menjalankan server Express
 app.listen(PORT, () => {
     console.log(`=============================================`);
     console.log(` Server berjalan di http://localhost:${PORT}`);

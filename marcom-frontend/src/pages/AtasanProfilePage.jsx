@@ -93,7 +93,6 @@ export default function AtasanProfilePage() {
   return (
     <div className="flex h-screen overflow-hidden bg-[#F6F8FB] relative font-sans text-slate-700">
       
-      {/* GLOBAL-STYLED NOTIFICATION / TOAST */}
       {toast.show && (
         <div className="fixed top-5 right-5 z-50 transition-all duration-300">
           <div

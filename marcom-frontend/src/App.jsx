@@ -8,7 +8,6 @@ import InputRequest from './pages/InputRequest';
 import MyRequests from './pages/MyRequests';
 import Profile from './pages/Profile';
 import UploadResult from './pages/UploadResult';
-import AdminDashboard from './pages/AdminDashboard'; // 1. Sudah diimport aman
 import AtasanDashboardMonitoring from "./pages/AtasanDashboardMonitoring";
 import AtasanProtectedRoute from "./components/atasan/AtasanProtectedRoute";
 import AtasanRequestPage from "./pages/AtasanRequestPage";

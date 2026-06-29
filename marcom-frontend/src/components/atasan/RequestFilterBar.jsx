@@ -46,7 +46,6 @@ export default function RequestFilterBar({ search, setSearch, status, setStatus 
               minWidth: "100%",
               width: "100%",
               borderRadius: "8px",
-              /* DIUBAH: Mengubah warna fokus dan hover dari orange (#dc5a14) ke abu-abu netral (#94A3B8) */
               borderColor: state.isFocused ? "#94a3b8" : "#CBD5E1",
               boxShadow: "none",
               fontSize: "14px",

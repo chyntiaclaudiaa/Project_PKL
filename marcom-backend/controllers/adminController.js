@@ -56,7 +56,6 @@ const createUser = async (req, res) => {
 
         const createdUser = newUser.rows[0];
 
-        // Kalau user baru ini punya role marcom + status Aktif, 
         // share folder "Marcomm Content" ke emailnya
         const userRole = role || 'guest';
         const userStatus = status || 'Aktif';
@@ -65,9 +64,9 @@ const createUser = async (req, res) => {
         if (userStatus === 'Aktif' && isMarcomRole) {
             const shareSuccess = await shareMarcomFolderToUser(email);
             if (shareSuccess) {
-                console.log(`✓ NEW USER: ${email} - Marcomm Content folder shared automatically`);
+                console.log(`NEW USER: ${email} - Marcomm Content folder shared automatically`);
             } else {
-                console.log(`⚠ NEW USER: ${email} - Folder share gagal, silakan share manual`);
+                console.log(`NEW USER: ${email} - Folder share gagal, silakan share manual`);
             }
         }
 
@@ -97,7 +96,7 @@ const updateUser = async (req, res) => {
         const finalEmail = email || existingUser.email;
         const finalDivisi = divisi !== undefined ? divisi : existingUser.divisi;
         const finalJabatan = jabatan !== undefined ? jabatan : existingUser.jabatan;
-        const finalStatus = status !== undefined ? status : existingUser.status; // Mencegah status berubah nonaktif/NULL
+        const finalStatus = status !== undefined ? status : existingUser.status; 
         let inputRole = role !== undefined ? role : existingUser.role;
 
         let finalRole = inputRole;
@@ -136,27 +135,22 @@ const updateUser = async (req, res) => {
         const newStatus = status || oldUser.status;
         const isMarcomRole = newRole && newRole.includes('marcom');
 
-        // Auto-manage folder sharing based on new status & role
         if (newStatus === 'Aktif' && isMarcomRole) {
-            // User AKTIF + punya role MARCOM → SHARE folder
             if (!oldUser.email.includes('marcom') || oldUser.status !== 'Aktif') {
-                // Hanya share kalau sebelumnya belum punya akses
                 const shareSuccess = await shareMarcomFolderToUser(newEmail);
                 if (shareSuccess) {
-                    console.log(`✓ UPDATE USER: ${newEmail} - Marcomm Content folder shared (activated + marcom role)`);
+                    console.log(`UPDATE USER: ${newEmail} - Marcomm Content folder shared (activated + marcom role)`);
                 }
             }
         } else if (newStatus === 'Nonaktif') {
-            // User jadi NONAKTIF → REVOKE folder
             const revokeSuccess = await revokeMarcomFolderFromUser(newEmail);
             if (revokeSuccess) {
-                console.log(`✓ UPDATE USER: ${newEmail} - Marcomm Content folder access revoked (deactivated)`);
+                console.log(`UPDATE USER: ${newEmail} - Marcomm Content folder access revoked (deactivated)`);
             }
         } else if (newStatus === 'Aktif' && !isMarcomRole) {
-            // User AKTIF tapi BUKAN role marcom → REVOKE folder
             const revokeSuccess = await revokeMarcomFolderFromUser(newEmail);
             if (revokeSuccess) {
-                console.log(`✓ UPDATE USER: ${newEmail} - Marcomm Content folder access revoked (no marcom role)`);
+                console.log(`UPDATE USER: ${newEmail} - Marcomm Content folder access revoked (no marcom role)`);
             }
         }
 

@@ -1,5 +1,4 @@
 export default function ReportDetailTable({ data }) {
-  // Menggunakan Utility Badge Status langsung dari file atasan_dashboard.css global Anda
   const getStatusBadgeClass = (status) => {
     switch (status) {
       case "Menunggu": return "badge-menunggu";
@@ -12,9 +11,6 @@ export default function ReportDetailTable({ data }) {
   };
 
   return (
-    /* 1. 'custom-card-style' dipanggil dari atasan_dashboard.css untuk border slate-300 dan no-shadow.
-       2. Mengganti 'overflow-hidden' menjadi 'overflow-visible' saat rendering cetak/ekspor agar scrollbar hilang total.
-    */
     <div className="bg-white custom-card-style overflow-visible w-full">
       {/* Menghilangkan pembatas 'overflow-x-auto' agar layout tidak membuat window scrollbar buatan 
       */}

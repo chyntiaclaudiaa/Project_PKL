@@ -3,7 +3,6 @@ import { CalendarDays, Download } from "lucide-react";
 export default function ReportFilterBar({ startDate, setStartDate, endDate, setEndDate, onExport }) {
   return (
     <div className="flex items-center justify-between w-full gap-4">
-      {/* Input Filter Tanggal (Sisi Kiri) */}
       <div className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-lg border border-slate-300 text-sm">
         <CalendarDays className="w-4 h-4 text-slate-400" />
         <input 
@@ -21,11 +20,10 @@ export default function ReportFilterBar({ startDate, setStartDate, endDate, setE
         />
       </div>
 
-      {/* Button Export (Otomatis Menempel di Ujung Kanan) */}
       <button
         onClick={onExport}
         className="text-white rounded-lg px-5 py-2 text-sm font-medium transition whitespace-nowrap flex items-center gap-2 hover:opacity-90"
-        style={{ backgroundColor: '#034EA2' }} // Menggunakan warna utama Welcome Banner Anda
+        style={{ backgroundColor: '#034EA2' }} 
       >
         <Download className="w-4 h-4" />
         Export PDF
