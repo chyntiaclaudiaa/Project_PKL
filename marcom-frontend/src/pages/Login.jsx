@@ -71,7 +71,7 @@ const Login = () => {
                 navigate('/admin/dashboard');
             } else if (user.role === 'marcom_member') {
                 navigate('/anggota/dashboard');
-            } else if (user.role === 'marcom_supervisor') {
+            } else if (user.role === 'marcom_manager') { 
                 navigate('/atasan/dashboard');
             } else {
                 setError('Role pengguna tidak dikenali.');
@@ -141,10 +141,6 @@ const Login = () => {
                 <div className="bg-white text-gray-800 rounded-3xl shadow-2xl p-12 w-full max-w-lg min-h-[520px] flex flex-col justify-center">
                     <h3 className="text-3xl font-bold text-[#0B3C80]">Selamat Datang</h3>
                     <p className="text-sm text-gray-400 mt-1 mb-6">Masuk ke akun Anda untuk melanjutkan</p>
-
-                    <p className="text-sm text-gray-500 mt-1 mb-6">
-                        Masuk ke akun Anda untuk melanjutkan
-                    </p>
 
                     {error && (
                         <div className="mb-4 p-3 bg-red-100 text-red-700 text-sm rounded-lg">

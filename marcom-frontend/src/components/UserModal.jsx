@@ -32,9 +32,9 @@ const UserModal = ({
     ];
 
     const jabatanOptions = [
-        'Staff/Anggota', 'Pemimpin Divisi', 'PJ. Pemimpin Divisi', 'Pemimpin Unit',
-        'PJ. Pemimpin Unit', 'Pemimpin Unit Kerja Khusus (UKK)', 'PJ. Pemimpin Unit Kerja Khusus (UKK)',
-        'Project Leader', 'Unit Kantor', 'Eksternal/Lain-lain'
+    'Anggota', 
+    'Pemimpin Divisi', 
+    'Admin'
     ];
 
     const statusOptions = ['Aktif', 'Nonaktif'];
@@ -104,7 +104,7 @@ const UserModal = ({
 
                     <div className="grid grid-cols-2 gap-4">
                         <div>
-                            <label className="text-xs font-bold text-slate-600 block mb-1">{!isEdit ? 'Password Sementara *' : 'Ganti Password (Kosongkan jika tidak diubah)'}</label>
+                            <label className="text-xs font-bold text-slate-600 block mb-1">{!isEdit ? 'Password Sementara *' : 'Ganti Password'}</label>
                             <div className="relative">
                                 <input 
                                     type={showModalPassword ? 'text' : 'password'}
