@@ -1,0 +1,318 @@
+@import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;500;600;700;800&display=swap');
+
+.input-request-page,
+.input-request-page * {
+    box-sizing: border-box;
+}
+
+.input-request-page {
+    min-height: 100vh;
+    background: #f4f6f9;
+    color: #061b3a;
+    font-family: 'Open Sans', Arial, sans-serif;
+    /* Sidebar 260px — halaman ini harus dibungkus layout yang punya sidebar */
+    margin-left: 260px;
+    width: calc(100% - 260px);
+}
+
+/* Header */
+.input-header {
+    height: 64px;
+    background: #ffffff;
+    border-bottom: 1px solid #e6e9ef;
+    display: flex;
+    align-items: center;
+    padding: 0 24px;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.input-header h1 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 800;
+    color: #061b3a;
+}
+
+/* Wrapper */
+.input-request-wrapper {
+    max-width: 1000px;
+    padding: 24px;
+}
+
+/* Cards */
+.request-form-card,
+.reminder-card {
+    background: #ffffff;
+    border: 1px solid #e2e6ee;
+    border-radius: 13px;
+    margin-bottom: 24px;
+    padding: 24px;
+    box-shadow: 0 2px 8px rgba(6, 27, 58, 0.06);
+}
+
+.request-form-card h2,
+.reminder-card h2 {
+    margin: 0 0 20px 0;
+    font-size: 15px;
+    font-weight: 800;
+    color: #061b3a;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.request-form-card h2 svg,
+.reminder-card h2 svg {
+    flex-shrink: 0;
+    width: 20px;
+    height: 20px;
+    color: #f05a2f;
+    stroke-width: 2.5;
+}
+
+.request-form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    column-gap: 24px;
+    row-gap: 20px;
+    align-items: start;
+}
+
+/* Form Group */
+.form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.form-group label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+    font-size: 13px;
+    font-weight: 700;
+    color: #061b3a;
+}
+
+.form-group label svg {
+    flex-shrink: 0;
+    width: 16px;
+    height: 16px;
+    color: #f05a2f;
+    stroke-width: 2.5;
+}
+
+.form-group label span {
+    color: #f05a2f;
+    margin-left: auto;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+    width: 100%;
+    border: 1px solid #d9dee7;
+    border-radius: 8px;
+    background: #fbfcfe;
+    color: #061b3a;
+    font-size: 13px;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    font-family: 'Open Sans', Arial, sans-serif;
+}
+
+.form-group input,
+.form-group select {
+    height: 40px;
+    padding: 0 12px;
+}
+
+.form-group textarea {
+    height: 120px;
+    padding: 12px;
+    resize: vertical;
+    line-height: 1.5;
+}
+
+.form-group input::placeholder,
+.form-group textarea::placeholder {
+    color: #9ca3af;
+}
+
+.form-group select {
+    appearance: auto;
+    cursor: pointer;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+    border-color: #f05a2f;
+    background: #ffffff;
+    box-shadow: 0 0 0 3px rgba(240, 90, 47, 0.1);
+}
+
+.form-group input.input-error,
+.form-group select.input-error,
+.form-group textarea.input-error {
+    border-color: #dc2626;
+    background: #fff5f5;
+}
+
+.form-group small {
+    display: block;
+    margin-top: 6px;
+    color: #dc2626;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+/* Reminder */
+.reminder-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.reminder-list label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #061b3a;
+    cursor: pointer;
+}
+
+.reminder-list input[type='checkbox'] {
+    width: 16px;
+    height: 16px;
+    margin: 0;
+    accent-color: #f05a2f;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+/* Google Calendar button */
+.calendar-connected {
+    height: 40px;
+    background: #eafaf1;
+    border-radius: 8px;
+    padding: 0 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    color: #009f4d;
+    font-size: 13px;
+    font-weight: 700;
+    border: none;
+    cursor: pointer;
+    transition: opacity 0.2s;
+    width: 100%;
+}
+
+.calendar-connected:disabled {
+    cursor: default;
+    opacity: 0.85;
+}
+
+.calendar-connected div {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.calendar-connected span {
+    width: 8px;
+    height: 8px;
+    background: #18b957;
+    border-radius: 50%;
+    display: inline-block;
+    flex-shrink: 0;
+}
+
+.calendar-connected p {
+    margin: 0;
+    font-size: 12px;
+    font-weight: 600;
+    color: #009f4d;
+}
+
+.calendar-disconnected {
+    background: #fff7ed;
+    border: 1px solid #fed7aa;
+    color: #c2410c;
+}
+
+.calendar-disconnected div,
+.calendar-disconnected p {
+    color: #c2410c;
+}
+
+.calendar-disconnected span {
+    background: #f97316;
+}
+
+/* Form Actions */
+.form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+}
+
+.save-request-btn {
+    height: 40px;
+    border-radius: 8px;
+    padding: 0 28px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.2s;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    background: #f05a2f;
+    color: #ffffff;
+}
+
+.save-request-btn svg {
+    flex-shrink: 0;
+    width: 18px;
+    height: 18px;
+}
+
+.save-request-btn:hover {
+    background: #df4c25;
+}
+
+.save-request-btn:disabled {
+    background: #9ca3af;
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+@media (max-width: 1024px) {
+    .input-request-page {
+        margin-left: 0;
+        width: 100%;
+    }
+}
+
+@media (max-width: 768px) {
+    .input-request-wrapper {
+        padding: 16px;
+    }
+
+    .request-form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .form-group label span {
+        margin-left: 0;
+    }
+}

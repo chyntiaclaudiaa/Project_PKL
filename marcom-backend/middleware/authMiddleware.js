@@ -26,4 +26,45 @@ const isAdmin = (req, res, next) => {
     next();
 };
 
-module.exports = { verifyToken, isAdmin };
+// 3. Validasi khusus Anggota MarCom
+const isMarcomMember = (req, res, next) => {
+    if (req.user.role !== 'marcom_member') {
+        return res.status(403).json({
+            message: 'Akses khusus Anggota MarCom!'
+        });
+    }
+
+    next();
+};
+
+// 4. Validasi khusus Atasan MarCom
+const isMarcomManager = (req, res, next) => {
+    if (req.user.role !== 'marcom_manager') {
+        return res.status(403).json({
+            message: 'Akses khusus Atasan MarCom!'
+        });
+    }
+
+    next();
+};
+
+// 5. Middleware fleksibel untuk beberapa role sekaligus
+const allowRoles = (...roles) => {
+    return (req, res, next) => {
+        if (!roles.includes(req.user.role)) {
+            return res.status(403).json({
+                message: 'Anda tidak memiliki akses ke fitur ini.'
+            });
+        }
+
+        next();
+    };
+};
+
+module.exports = {
+    verifyToken,
+    isAdmin,
+    isMarcomMember,
+    isMarcomManager,
+    allowRoles
+};

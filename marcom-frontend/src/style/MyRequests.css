@@ -1,0 +1,255 @@
+.request-page-header {
+  height: 64px;
+  background: #ffffff;
+  border-bottom: 1px solid #e3e8f0;
+  padding: 12px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.request-page-header h1 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 800;
+  color: #061b3a;
+}
+
+.request-page-header p {
+  margin: 4px 0 0;
+  color: #8892aa;
+  font-size: 12px;
+}
+
+.new-request-btn {
+  height: 36px;
+  border: 0;
+  border-radius: 8px;
+  background: #f05a2f;
+  color: #ffffff;
+  padding: 0 18px;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.new-request-btn:hover {
+  background: #df4c25;
+}
+
+.my-request-content {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.my-request-card {
+  min-height: 95px;
+  background: #ffffff;
+  border: 1px solid #e3e8f0;
+  border-radius: 12px;
+  padding: 18px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.my-request-card:hover {
+  box-shadow: 0 8px 20px rgba(15, 31, 74, 0.06);
+  transform: translateY(-1px);
+}
+
+.my-request-info {
+  min-width: 0;
+}
+
+.request-code-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.request-code-row span {
+  color: #98a2b8;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.request-status {
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.request-status.waiting {
+  color: #d77900;
+}
+
+.request-status.process {
+  color: #1f4fd6;
+}
+
+.request-status.done {
+  color: #13a051;
+}
+
+.request-status.revision {
+  color: #dc2626;
+}
+
+.my-request-card h2 {
+  margin: 0 0 10px;
+  color: #061b3a;
+  font-size: 15px;
+  font-weight: 900;
+}
+
+.request-meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 14px;
+  color: #7d87a0;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.request-action {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.detail-btn,
+.edit-btn {
+  height: 32px;
+  border-radius: 8px;
+  padding: 0 14px;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.detail-btn {
+  border: 1px solid #ffc9aa;
+  background: #fff7f2;
+  color: #f05a2f;
+}
+
+.detail-btn:hover {
+  background: #fff0e8;
+}
+
+.edit-btn {
+  border: 1px solid #b8d9ff;
+  background: #eff7ff;
+  color: #0875d1;
+}
+
+.edit-btn:hover {
+  background: #e2f0ff;
+}
+
+.request-empty-card {
+  background: #ffffff;
+  border: 1px solid #e3e8f0;
+  border-radius: 12px;
+  padding: 28px;
+}
+
+.request-empty-card h3 {
+  margin: 0;
+  color: #061b3a;
+  font-size: 15px;
+}
+
+.request-empty-card p {
+  margin: 6px 0 0;
+  color: #8892aa;
+  font-size: 13px;
+}
+
+@media (max-width: 900px) {
+  .my-request-card {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .request-action {
+    width: 100%;
+    justify-content: flex-end;
+  }
+}
+
+.my-requests-body {
+  padding: 24px;
+  max-width: 900px;
+}
+
+.request-toolbar {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.search-input {
+  width: 100%;
+  padding: 0.6rem 1rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.search-input:focus {
+  border-color: #3b82f6;
+}
+
+.filter-tabs {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.filter-tab {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.4rem 0.9rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 20px;
+  background: white;
+  font-size: 0.82rem;
+  color: #64748b;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.filter-tab:hover {
+  border-color: #3b82f6;
+  color: #3b82f6;
+}
+
+.filter-tab.active {
+  background: #3b82f6;
+  border-color: #3b82f6;
+  color: white;
+}
+
+.filter-count {
+  background: rgba(0, 0, 0, 0.12);
+  border-radius: 10px;
+  padding: 0 6px;
+  font-size: 0.75rem;
+  line-height: 1.4;
+}
+
+.filter-tab.active .filter-count {
+  background: rgba(255, 255, 255, 0.25);
+}

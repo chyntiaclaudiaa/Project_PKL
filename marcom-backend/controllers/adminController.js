@@ -1,5 +1,6 @@
 const db = require('../config/db');
 const bcrypt = require('bcrypt');
+const { shareMarcomFolderToUser, revokeMarcomFolderFromUser } = require('../services/googleDriveService');
 
 // 1. Mengambil semua data pengguna + Fitur Pencarian (Search)
 const getAllUsers = async (req, res) => {
@@ -9,7 +10,6 @@ const getAllUsers = async (req, res) => {
         let query = 'SELECT id, name, email, role, divisi, jabatan, status, created_at FROM users';
         let params = [];
 
-        // Jika ada query pencarian (?search=...) dari frontend
         if (search) {
             query += ' WHERE name ILIKE $1 OR email ILIKE $1 OR divisi ILIKE $1 OR jabatan ILIKE $1';
             params.push(`%${search}%`);
@@ -36,7 +36,7 @@ const createUser = async (req, res) => {
             return res.status(400).json({ message: 'Email sudah terdaftar di sistem!' });
         }
 
-        // Hash password sementara sebelum disimpan ke database
+        // Hash password
         const saltRounds = 10;
         const hashedPassword = await bcrypt.hash(password, saltRounds);
 
@@ -48,9 +48,26 @@ const createUser = async (req, res) => {
             [name, email, hashedPassword, role, divisi, jabatan, status || 'Aktif']
         );
 
+        const createdUser = newUser.rows[0];
+
+        // Kalau user baru ini punya role marcom + status Aktif, 
+        // share folder "Marcomm Content" ke emailnya
+        const userRole = role || 'guest';
+        const userStatus = status || 'Aktif';
+        const isMarcomRole = userRole && userRole.includes('marcom');
+
+        if (userStatus === 'Aktif' && isMarcomRole) {
+            const shareSuccess = await shareMarcomFolderToUser(email);
+            if (shareSuccess) {
+                console.log(`✓ NEW USER: ${email} - Marcomm Content folder shared automatically`);
+            } else {
+                console.log(`⚠ NEW USER: ${email} - Folder share gagal, silakan share manual`);
+            }
+        }
+
         res.status(201).json({
             message: 'Pengguna baru berhasil ditambahkan!',
-            user: newUser.rows[0]
+            user: createdUser
         });
     } catch (err) {
         console.error(err.message);
@@ -64,6 +81,19 @@ const updateUser = async (req, res) => {
     const { name, email, role, divisi, jabatan, status } = req.body;
 
     try {
+        // Cek user yang lama dulu
+        const oldUserResult = await db.query(
+            'SELECT email, role, status FROM users WHERE id = $1',
+            [id]
+        );
+
+        if (oldUserResult.rows.length === 0) {
+            return res.status(404).json({ message: 'Pengguna tidak ditemukan!' });
+        }
+
+        const oldUser = oldUserResult.rows[0];
+
+        // Update user
         const updatedUser = await db.query(
             `UPDATE users 
              SET name = $1, email = $2, role = $3, divisi = $4, jabatan = $5, status = $6 
@@ -72,13 +102,39 @@ const updateUser = async (req, res) => {
             [name, email, role, divisi, jabatan, status, id]
         );
 
-        if (updatedUser.rows.length === 0) {
-            return res.status(404).json({ message: 'Pengguna tidak ditemukan!' });
+        const updatedUserData = updatedUser.rows[0];
+        const newEmail = email || oldUser.email;
+        const newRole = role || oldUser.role;
+        const newStatus = status || oldUser.status;
+        const isMarcomRole = newRole && newRole.includes('marcom');
+
+        // Auto-manage folder sharing based on new status & role
+        if (newStatus === 'Aktif' && isMarcomRole) {
+            // User AKTIF + punya role MARCOM → SHARE folder
+            if (!oldUser.email.includes('marcom') || oldUser.status !== 'Aktif') {
+                // Hanya share kalau sebelumnya belum punya akses
+                const shareSuccess = await shareMarcomFolderToUser(newEmail);
+                if (shareSuccess) {
+                    console.log(`✓ UPDATE USER: ${newEmail} - Marcomm Content folder shared (activated + marcom role)`);
+                }
+            }
+        } else if (newStatus === 'Nonaktif') {
+            // User jadi NONAKTIF → REVOKE folder
+            const revokeSuccess = await revokeMarcomFolderFromUser(newEmail);
+            if (revokeSuccess) {
+                console.log(`✓ UPDATE USER: ${newEmail} - Marcomm Content folder access revoked (deactivated)`);
+            }
+        } else if (newStatus === 'Aktif' && !isMarcomRole) {
+            // User AKTIF tapi BUKAN role marcom → REVOKE folder
+            const revokeSuccess = await revokeMarcomFolderFromUser(newEmail);
+            if (revokeSuccess) {
+                console.log(`✓ UPDATE USER: ${newEmail} - Marcomm Content folder access revoked (no marcom role)`);
+            }
         }
 
         res.status(200).json({
             message: 'Data pengguna berhasil diperbarui!',
-            user: updatedUser.rows[0]
+            user: updatedUserData
         });
     } catch (err) {
         console.error(err.message);
@@ -86,13 +142,12 @@ const updateUser = async (req, res) => {
     }
 };
 
-// 4. BARU: Memperbarui password admin dengan mencocokkan password lama di database
+// 4. Memperbarui password
 const updatePassword = async (req, res) => {
     const { id } = req.params;
     const { currentPassword, newPassword } = req.body;
 
     try {
-        // Ambil data user dari database berdasarkan ID
         const userResult = await db.query('SELECT password FROM users WHERE id = $1', [id]);
         
         if (userResult.rows.length === 0) {
@@ -101,17 +156,14 @@ const updatePassword = async (req, res) => {
 
         const user = userResult.rows[0];
 
-        // Verifikasi apakah password lama yang diketik COCOK dengan hash di database
         const isMatch = await bcrypt.compare(currentPassword, user.password);
         if (!isMatch) {
             return res.status(400).json({ message: 'Password saat ini salah!' });
         }
 
-        // Jika cocok, hash password baru sebelum dimasukkan ke database
         const saltRounds = 10;
         const hashedNewPassword = await bcrypt.hash(newPassword, saltRounds);
 
-        // Update record password baru ke PostgreSQL
         await db.query('UPDATE users SET password = $2 WHERE id = $1', [id, hashedNewPassword]);
 
         res.status(200).json({ message: 'Password admin berhasil diperbarui!' });
@@ -121,5 +173,4 @@ const updatePassword = async (req, res) => {
     }
 };
 
-// Daftarkan updatePassword di module exports paling bawah
 module.exports = { getAllUsers, createUser, updateUser, updatePassword };

@@ -22,3 +22,11 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+uploads/
+
+   config/marcom-service-account.json
+   config/db.js
+   node_modules/
+   .env
+
