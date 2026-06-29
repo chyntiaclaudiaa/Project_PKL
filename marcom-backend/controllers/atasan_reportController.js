@@ -109,6 +109,7 @@ const getReportData = async (req, res) => {
         cr.title,
         cr.deadline,
         cr.entry_date,
+        cr.platform_target,
         cr.status,
         u.name AS pic_name
 

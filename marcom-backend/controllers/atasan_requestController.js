@@ -43,7 +43,7 @@ const getAllRequests = async (req, res) => {
     }
 
     query += `
-      ORDER BY cr.created_at DESC
+      ORDER BY cr.deadline ASC
     `;
 
     const result = await db.query(query, params);
