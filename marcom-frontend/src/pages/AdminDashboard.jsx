@@ -145,10 +145,16 @@ const AdminDashboard = () => {
     };
 
     const renderRoleBadge = (role) => {
-        if (role === 'admin') return <span className="px-4 py-1.5 text-xs font-bold rounded-full bg-red-100 text-[#e63946] tracking-wide">Administrator</span>;
-        if (role === 'marcom_manager') return <span className="px-4 py-1.5 text-xs font-bold rounded-full bg-blue-50 text-blue-600 tracking-wide">Pimpinan Bidang</span>;
-        return <span className="px-4 py-1.5 text-xs font-bold rounded-full bg-green-50 text-green-600 tracking-wide">Anggota MarCom</span>;
-    };
+    const baseClasses = "inline-block px-3 py-1 text-[10px] font-bold rounded-lg whitespace-normal text-center leading-tight";
+    
+    if (role === 'admin') 
+        return <span className={`${baseClasses} bg-red-100 text-[#e63946]`}>Administrator</span>;
+    
+    if (role === 'marcom_manager') 
+        return <span className={`${baseClasses} bg-blue-50 text-blue-600`}>Pimpinan Bidang</span>;
+    
+    return <span className={`${baseClasses} bg-green-50 text-green-600`}>Anggota MarCom</span>;
+};
 
     return (
         <div className="flex h-screen w-full bg-[#f4f7fc] font-sans overflow-hidden relative select-none">

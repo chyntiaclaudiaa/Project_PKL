@@ -49,13 +49,25 @@ export default function AtasanRequestPage() {
   const loadRequests = async () => {
     try {
       const res = await getAllRequests({ search, status });
-      const dataTarget = res && res.data ? res.data : res;
+      
+      console.log("Full API Response:", res); 
 
-      if (Array.isArray(dataTarget)) {
-        setRequests(dataTarget);
+      let dataTarget = [];
+      
+      if (Array.isArray(res)) {
+        dataTarget = res; // Jika respons langsung berupa array
+      } else if (res && Array.isArray(res.data)) {
+        dataTarget = res.data; // Standar bawaan axios (res.data)
+      } else if (res && res.data && Array.isArray(res.data.data)) {
+        dataTarget = res.data.data; // Format API custom (biasanya JSON API membalutnya di dalam "data")
+      } else if (res && Array.isArray(res.requests)) {
+          dataTarget = res.requests; // Jika properti namanya "requests"
       } else {
-        console.error("Data yang diterima bukan array:", res);
+        console.error("Gagal menemukan struktur Array pada respons API. Lihat log 'Full API Response'.");
       }
+
+      setRequests(dataTarget);
+
     } catch (err) {
       console.error("Gagal mengambil data request:", err);
     }

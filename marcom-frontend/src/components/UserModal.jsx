@@ -22,13 +22,13 @@ const UserModal = ({
     const statusRef = useRef(null);
 
     const divisiOptions = [
-        'Divisi Audit Internal', 'Divisi Human Capital', 'Divisi Kepatuhan', 'Divisi Manajemen Risiko',
-        'Divisi Operasional', 'Divisi Umum', 'Divisi Keuangan', 'Divisi Teknologi Informasi',
-        'Divisi Tresuri', 'Divisi Funding & Wealth Management', 'Divisi SME & Commercial',
-        'Unit Usaha Syariah', 'UKK APU & PPT', 'Divisi Penyelamatan Kredit', 'Divisi Perencanaan Strategis',
+        'Audit Internal', 'Human Capital', 'Kepatuhan', 'Manajemen Risiko',
+        'Operasional', 'Umum', 'Keuangan', 'Teknologi Informasi',
+        'Tresuri', 'Funding & Wealth Management', 'SME & Commercial',
+        'Unit Usaha Syariah', 'UKK APU & PPT', 'Penyelamatan Kredit', 'Perencanaan Strategis',
         'Unit Strategi Anti Fraud', 'Digital Banking', 'Corporate Culture & Service',
-        'Divisi Kredit Konsumer', 'Divisi Credit Risk', 'UKK Commercial Business Center',
-        'Divisi Marketing Communication', 'UKK Internal Control Over Financial Report', 'Unit Kantor', 'Eksternal/lain-lain'
+        'Kredit Konsumer', 'Credit Risk', 'UKK Commercial Business Center',
+        'Marketing Communication', 'UKK Internal Control Over Financial Report', 'Unit Kantor', 'Eksternal/lain-lain'
     ];
 
     const jabatanOptions = [
