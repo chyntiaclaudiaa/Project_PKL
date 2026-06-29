@@ -3,7 +3,13 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 
 const login = async (req, res) => {
-    const { email, password } = req.body;
+    const { email, password } = req.body || {};
+
+    if (!email || !password) {
+        return res.status(400).json({
+            message: 'Email dan password wajib diisi.'
+        });
+    }
 
     try {
         // 1. Cari user berdasarkan email di database

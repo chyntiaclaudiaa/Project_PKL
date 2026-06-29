@@ -1,5 +1,6 @@
 const db = require('../config/db');
 const bcrypt = require('bcrypt');
+const { shareMarcomFolderToUser, revokeMarcomFolderFromUser } = require('../services/googleDriveService');
 
 const getAllUsers = async (req, res) => {
     const { search } = req.query;
@@ -53,9 +54,26 @@ const createUser = async (req, res) => {
             [name, email, hashedPassword, finalRole, divisi, jabatan, (status === null || status === undefined) ? 'Aktif' : status]
         );
 
+        const createdUser = newUser.rows[0];
+
+        // Kalau user baru ini punya role marcom + status Aktif, 
+        // share folder "Marcomm Content" ke emailnya
+        const userRole = role || 'guest';
+        const userStatus = status || 'Aktif';
+        const isMarcomRole = userRole && userRole.includes('marcom');
+
+        if (userStatus === 'Aktif' && isMarcomRole) {
+            const shareSuccess = await shareMarcomFolderToUser(email);
+            if (shareSuccess) {
+                console.log(`✓ NEW USER: ${email} - Marcomm Content folder shared automatically`);
+            } else {
+                console.log(`⚠ NEW USER: ${email} - Folder share gagal, silakan share manual`);
+            }
+        }
+
         res.status(201).json({
             message: 'Pengguna baru berhasil ditambahkan!',
-            user: newUser.rows[0]
+            user: createdUser
         });
     } catch (err) {
         console.error(err.message);
@@ -112,8 +130,40 @@ const updateUser = async (req, res) => {
             [finalName, finalEmail, finalRole, finalDivisi, finalJabatan, finalStatus, id]
         );
 
-        res.status(200).json({ message: 'Data pengguna berhasil diperbarui!', user: updatedUser.rows[0] });
+        const updatedUserData = updatedUser.rows[0];
+        const newEmail = email || oldUser.email;
+        const newRole = role || oldUser.role;
+        const newStatus = status || oldUser.status;
+        const isMarcomRole = newRole && newRole.includes('marcom');
 
+        // Auto-manage folder sharing based on new status & role
+        if (newStatus === 'Aktif' && isMarcomRole) {
+            // User AKTIF + punya role MARCOM → SHARE folder
+            if (!oldUser.email.includes('marcom') || oldUser.status !== 'Aktif') {
+                // Hanya share kalau sebelumnya belum punya akses
+                const shareSuccess = await shareMarcomFolderToUser(newEmail);
+                if (shareSuccess) {
+                    console.log(`✓ UPDATE USER: ${newEmail} - Marcomm Content folder shared (activated + marcom role)`);
+                }
+            }
+        } else if (newStatus === 'Nonaktif') {
+            // User jadi NONAKTIF → REVOKE folder
+            const revokeSuccess = await revokeMarcomFolderFromUser(newEmail);
+            if (revokeSuccess) {
+                console.log(`✓ UPDATE USER: ${newEmail} - Marcomm Content folder access revoked (deactivated)`);
+            }
+        } else if (newStatus === 'Aktif' && !isMarcomRole) {
+            // User AKTIF tapi BUKAN role marcom → REVOKE folder
+            const revokeSuccess = await revokeMarcomFolderFromUser(newEmail);
+            if (revokeSuccess) {
+                console.log(`✓ UPDATE USER: ${newEmail} - Marcomm Content folder access revoked (no marcom role)`);
+            }
+        }
+
+        res.status(200).json({
+            message: 'Data pengguna berhasil diperbarui!',
+            user: updatedUserData
+        });
     } catch (err) {
         console.error(err.message);
         res.status(500).json({ message: 'Gagal memperbarui data pengguna.' });

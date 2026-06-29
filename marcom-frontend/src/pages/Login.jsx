@@ -9,6 +9,8 @@ const Login = () => {
     const [rememberMe, setRememberMe] = useState(false); // State untuk checkbox Ingat Saya
     const [showPassword, setShowPassword] = useState(false);
     const [error, setError] = useState('');
+    const [loading, setLoading] = useState(false);
+
     const navigate = useNavigate();
 
     // 1. CEK SESI AKTIF & EMAIL YANG TERSIMPAN (Saat Halaman Dimuat)
@@ -37,30 +39,47 @@ const Login = () => {
         e.preventDefault();
         setError('');
 
+        if (!email || !password) {
+            setError('Email dan password wajib diisi.');
+            return;
+        }
+
         try {
-            const response = await API.post('/auth/login', { email, password });
+            setLoading(true);
+
+            const response = await API.post('/auth/login', {
+                email,
+                password,
+            });
+
             const { token, user } = response.data;
 
-            // Simpan token Sesi Utama
             localStorage.setItem('token', token);
             localStorage.setItem('user', JSON.stringify(user));
-
-            // LOGIKA REMEMBER ME: Simpan atau hapus email dari memori lokal
             if (rememberMe) {
                 localStorage.setItem('remembered_email', email);
             } else {
                 localStorage.removeItem('remembered_email');
             }
 
-            if (user.role === "admin") {
-                navigate("/admin/dashboard");
-            } else if (user.role === "marcom_manager") {
-                navigate("/atasan/dashboard");
+            if (user.must_change_password) {
+                navigate('/change-password');
+                return;
+            }
+
+            if (user.role === 'admin') {
+                navigate('/admin/dashboard');
+            } else if (user.role === 'marcom_member') {
+                navigate('/anggota/dashboard');
+            } else if (user.role === 'marcom_supervisor') {
+                navigate('/atasan/dashboard');
             } else {
-                navigate("/anggota/dashboard");
+                setError('Role pengguna tidak dikenali.');
             }
         } catch (err) {
             setError(err.response?.data?.message || 'Terjadi kesalahan saat login.');
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -113,7 +132,9 @@ const Login = () => {
                     </div>
                 </div>
 
-                <p className="text-xs text-gray-400">© 2026 Marketing Communication Department</p>
+                <p className="text-xs text-gray-400">
+                    © 2026 Marketing Communication Department
+                </p>
             </div>
 
             <div className="flex items-center justify-center w-full md:w-1/2 bg-transparent p-6 md:p-12">
@@ -121,7 +142,15 @@ const Login = () => {
                     <h3 className="text-3xl font-bold text-[#0B3C80]">Selamat Datang</h3>
                     <p className="text-sm text-gray-400 mt-1 mb-6">Masuk ke akun Anda untuk melanjutkan</p>
 
-                    {error && <div className="mb-4 p-3 bg-red-100 text-red-700 text-sm rounded-lg">{error}</div>}
+                    <p className="text-sm text-gray-500 mt-1 mb-6">
+                        Masuk ke akun Anda untuk melanjutkan
+                    </p>
+
+                    {error && (
+                        <div className="mb-4 p-3 bg-red-100 text-red-700 text-sm rounded-lg">
+                            {error}
+                        </div>
+                    )}
 
                     <form onSubmit={handleLogin} className="space-y-4">
                         <div>
@@ -178,23 +207,24 @@ const Login = () => {
                             </div>
                         </div>
 
-                        <div className="flex items-center pt-1">
-                            <label className="flex items-center space-x-2 text-xs font-semibold text-gray-500 cursor-pointer select-none">
-                                <input 
-                                    type="checkbox" 
-                                    checked={rememberMe}
-                                    onChange={(e) => setRememberMe(e.target.checked)}
-                                    className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 accent-[#0B3C80]"
-                                />
-                                <span>Ingat saya</span>
-                            </label>
+                        <div className="flex items-center pt-1 mb-4">
+                        <label className="flex items-center space-x-2 text-xs font-semibold text-gray-500 cursor-pointer select-none">
+                            <input
+                            type="checkbox"
+                            checked={rememberMe}
+                            onChange={(e) => setRememberMe(e.target.checked)}
+                            className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 accent-[#0B3C80]"
+                            />
+                            <span>Ingat saya</span>
+                        </label>
                         </div>
 
-                        <button 
-                            type="submit" 
-                            className="w-full bg-[#e95723] hover:bg-[#d44b1c] text-white font-semibold py-3.5 rounded-xl transition duration-200 mt-4 shadow-md shadow-orange-600/20 text-center"
+                        <button
+                        type="submit"
+                        disabled={loading}
+                        className="w-full bg-[#e95723] hover:bg-[#d44b1c] disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-bold py-3.5 rounded-xl transition duration-200 mt-2 shadow-md shadow-orange-600/20 text-center"
                         >
-                            Masuk
+                        {loading ? 'Memproses...' : 'Masuk'}
                         </button>
                     </form>
                 </div>
