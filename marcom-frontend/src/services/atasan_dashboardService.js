@@ -70,7 +70,7 @@ export const getCommentNotifications = async () => {
  * @param {number|string} commentId - ID dari Komentar terkait
  */
 export const markNotificationAsRead = async (commentId) => {
-  // Tambahkan kembali '/read' di ujung URL agar cocok dengan router backend kamu
+  // Tambahkan kembali '/read' di ujung URL 
   const res = await API.put(`/dashboard/notifications/${commentId}/read`);
   return res.data;
 };

@@ -35,7 +35,6 @@ export default function PriorityRequestTable({ data, onOpenDetail }) {
               data.map((item) => (
                 <tr
                   key={item.id}
-                  // DIUBAH: Tambahkan pengecekan agar aman dari error 'not a function'
                   onClick={() => onOpenDetail && onOpenDetail(item.id)}
                   className="border-b border-slate-200 hover:bg-slate-50/80 transition-all cursor-pointer"
                 >

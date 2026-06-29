@@ -13,12 +13,10 @@ export default function RequestFilterBar({ search, setSearch, status, setStatus 
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Cari ID, Judul, PIC, nomor surat..."
-          /* DIUBAH: Mengganti focus:ring-orange-500 menjadi focus:border-slate-400 untuk warna netral saat aktif */
           className="w-full border border-slate-300 rounded-lg pl-10 pr-4 py-2.5 text-sm focus:outline-none focus:border-slate-400 transition-colors duration-200"
         />
       </div>
 
-      {/* Status Filter Dropdown */}
       <div className="w-full md:w-40">
         <Select
           value={[
@@ -60,7 +58,6 @@ export default function RequestFilterBar({ search, setSearch, status, setStatus 
             }),
             option: (base, state) => ({
               ...base,
-              /* DIUBAH: Mengubah background hover list dropdown menjadi abu-abu terang netral jika ingin senada */
               backgroundColor: state.isSelected ? "#E2E8F0" : state.isFocused ? "#F8FAFC" : "#fff",
               color: "#334155",
               cursor: "pointer",

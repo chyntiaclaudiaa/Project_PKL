@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import CommentSection from "../components/atasan/CommentSection";
-import { X, MessageCircle } from "lucide-react"; 
+import { X, MessageCircle, Send } from "lucide-react"; 
 
 import {
   getRequestById,
@@ -14,6 +14,7 @@ import {
 export default function AtasanRequestDetailPage({ requestId, onClose }) {
   const [request, setRequest] = useState(null);
   const [comments, setComments] = useState([]);
+  const [comment, setComment] = useState("");
 
   useEffect(() => {
     if (requestId) {
@@ -34,15 +35,16 @@ export default function AtasanRequestDetailPage({ requestId, onClose }) {
     }
   };
 
-  const handleSubmitComment = async (commentText) => {
-    if (!commentText.trim()) return;
+  const handleSubmitComment = async () => {
+    if (!comment.trim()) return;
     try {
       const user = JSON.parse(localStorage.getItem("user"));
       await addComment({
         request_id: requestId,
         user_id: user.id,
-        comment: commentText,
+        comment: comment,
       });
+      setComment("");
       await loadData();
     } catch (err) {
       console.error(err);
@@ -52,31 +54,21 @@ export default function AtasanRequestDetailPage({ requestId, onClose }) {
   if (!request) return null; 
 
   return (
-    /* DIUBAH: Menambahkan onClick={onClose} pada div backdrop luar ini.
-      Ketika pengguna mengklik area buram/gelap di luar card, fungsi onClose dijalankan.
-    */
     <div 
       onClick={onClose}
       className="fixed inset-0 bg-black/40 backdrop-blur-[2px] flex justify-center items-center z-[9999] p-4 overflow-hidden animate-fade-in cursor-pointer"
     >
-      
-      {/* CARD CONTAINER POPUP 
-        DIUBAH: Menambahkan onClick={(e) => e.stopPropagation()} dan cursor-default.
-        Ini krusial agar ketika area card putih diklik, event kliknya tidak "bocor/tembus" ke elemen backdrop luar.
-      */}
       <div 
         onClick={(e) => e.stopPropagation()}
         className="w-full max-w-4xl h-[90vh] bg-white rounded-none shadow-2xl flex flex-col overflow-hidden text-xs cursor-default"
       >
-        
-        {/* HEADER GRADASI HORIZONTAL */}
+        {/* HEADER POPUP (STAY AT TOP) */}
         <div 
           className="px-6 py-5 md:px-8 md:py-6 relative text-white flex flex-col gap-2 shrink-0 rounded-none"
           style={{
             background: 'linear-gradient(90deg, #0854AB 0%, #1868CA 100%)'
           }}
         >
-          {/* ID Kode & Tombol Batal */}
           <div className="flex justify-between items-center text-[11px] font-semibold tracking-wide text-white/90">
             <span>{request.request_code || "REQ-001"}</span>
             <button 
@@ -88,12 +80,10 @@ export default function AtasanRequestDetailPage({ requestId, onClose }) {
             </button>
           </div>
 
-          {/* Judul Utama */}
           <h2 className="text-lg md:text-xl font-bold leading-tight pr-10">
             {request.title}
           </h2>
 
-          {/* Status Badge */}
           <div className="flex mt-1">
             <span className="px-3 py-0.5 text-[11px] font-semibold rounded-full bg-[#E0F2FE] text-[#006DC3]">
               {request.status || "Diproses"}
@@ -101,10 +91,9 @@ export default function AtasanRequestDetailPage({ requestId, onClose }) {
           </div>
         </div>
 
-        {/* AREA PUTIH */}
-        <div className="flex-1 overflow-y-auto px-6 py-6 md:px-8 md:py-7 bg-white space-y-5">
+        {/* CONTAINER KONTEN ATAS (BISA SCROLL SECARA UTUH) */}
+        <div className="flex-1 overflow-y-auto px-6 pt-6 pb-2 md:px-8 md:pt-7 bg-white space-y-5">
           
-          {/* GRID DATA INFORMASI */}
           <div className="grid grid-cols-2 gap-x-6 gap-y-4 text-xs">
             <div>
               <p className="text-[11px] font-medium text-slate-400 mb-0.5">Nomor Surat</p>
@@ -136,7 +125,6 @@ export default function AtasanRequestDetailPage({ requestId, onClose }) {
             </div>
           </div>
 
-          {/* BOX DESKRIPSI KEBUTUHAN */}
           <div className="bg-[#F8FAFC] rounded-xl p-4 border border-slate-100">
             <p className="text-[11px] font-bold text-slate-400 mb-1.5 tracking-wide">
               Deskripsi Kebutuhan
@@ -146,22 +134,41 @@ export default function AtasanRequestDetailPage({ requestId, onClose }) {
             </p>
           </div>
 
-          {/* SEPARATOR LINE */}
           <div className="border-t border-slate-100 my-1"></div>
 
-          {/* KOMENTAR */}
-          <div className="space-y-3">
+          <div className="space-y-3 pb-4">
             <div className="flex items-center gap-1.5 text-slate-700 font-normal text-sm">
               <MessageCircle size={16} className="text-orange-500" />
               <span>Komentar</span>
             </div>
             
-            <CommentSection
-              comments={comments}
-              onSubmit={handleSubmitComment}
-            />
+            <CommentSection comments={comments} />
           </div>
+        </div>
 
+        {/* COLOM INPUT FIXED STAY DI PALING BAWAH CARD PUTIH */}
+        <div className="shrink-0 px-6 py-4 md:px-8 bg-white border-t border-slate-100 flex gap-2 items-center shadow-[0_-4px_12px_rgba(0,0,0,0.03)]">
+          <input
+            type="text"
+            value={comment}
+            onChange={(e) => setComment(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                handleSubmitComment();
+              }
+            }}
+            placeholder="Tulis Balasan..."
+            className="flex-1 border border-slate-200 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-slate-400 text-slate-700 bg-white"
+          />
+
+          <button
+            onClick={handleSubmitComment}
+            className="text-white rounded-lg p-2 flex items-center justify-center shrink-0 transition-all"
+            style={{ backgroundColor: '#E75A24' }}
+          >
+            <Send size={14} />
+          </button>
         </div>
 
       </div>
