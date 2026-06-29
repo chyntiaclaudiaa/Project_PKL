@@ -90,7 +90,6 @@ export default function RequestTable({ data, onTogglePriority, onOpenDetail }) {
                     </button>
                   </td>
                   <td className="text-center px-4 py-3">
-                    {/* DIUBAH: Mengganti fungsi navigate ke onOpenDetail dengan mengirimkan item.id */}
                     <button
                       type="button"
                       onClick={() => onOpenDetail(item.id)}

@@ -55,13 +55,13 @@ export default function AtasanRequestPage() {
       let dataTarget = [];
       
       if (Array.isArray(res)) {
-        dataTarget = res; // Jika respons langsung berupa array
+        dataTarget = res; 
       } else if (res && Array.isArray(res.data)) {
-        dataTarget = res.data; // Standar bawaan axios (res.data)
+        dataTarget = res.data; 
       } else if (res && res.data && Array.isArray(res.data.data)) {
-        dataTarget = res.data.data; // Format API custom (biasanya JSON API membalutnya di dalam "data")
+        dataTarget = res.data.data;
       } else if (res && Array.isArray(res.requests)) {
-          dataTarget = res.requests; // Jika properti namanya "requests"
+          dataTarget = res.requests; 
       } else {
         console.error("Gagal menemukan struktur Array pada respons API. Lihat log 'Full API Response'.");
       }
@@ -90,10 +90,8 @@ export default function AtasanRequestPage() {
         <AtasanSidebar activeMenu="request" />
       </div>
 
-      {/* CONTAINER KANAN (Scrollbar utama berada di div ini) */}
       <div ref={mainContainerRef} className="flex-1 h-screen flex flex-col overflow-y-auto scroll-smooth">
         
-        {/* HEADER MINI (Menggunakan sticky top-0 agar stay di atas saat main di-scroll) */}
         <header className="sticky top-0 bg-white border-b border-slate-100 px-6 py-5 md:px-8 shrink-0 z-10 ">
           <h1 className="text-xl md:text-2xl font-bold text-slate-800">Semua Request</h1>
           <p className="text-xs md:text-sm text-gray-500 mt-0.5">

@@ -5,7 +5,7 @@ export default function NotificationPopup({ notifications, onClose, onNotificati
     <>
       <div className="fixed inset-0 z-40" onClick={onClose} />
       
-      <div className="absolute right-0 mt-3 w-80 bg-white rounded-xl shadow-xl border border-slate-200 z-50 overflow-hidden flex flex-col max-h-[400px]">
+      <div className="absolute right-0 top-full mt-2 w-80 bg-white rounded-xl shadow-xl border border-slate-200 z-50 overflow-hidden flex flex-col max-h-[400px]">
         <div className="px-4 py-3 border-b border-slate-100 bg-slate-50 flex justify-between items-center">
           <span className="font-bold text-sm text-slate-800">Notifikasi Komentar</span>
           <span className="text-[10px] text-blue-600 font-medium">Terbaru</span>
@@ -18,7 +18,6 @@ export default function NotificationPopup({ notifications, onClose, onNotificati
             </div>
           ) : (
             notifications.map((notif) => {
-              // Validasi ketat untuk tipe data boolean dari database
               const isRead = notif.is_read === true || String(notif.is_read) === "true";
 
               return (

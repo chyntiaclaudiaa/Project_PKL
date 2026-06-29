@@ -68,15 +68,11 @@ export default function AtasanReportPage() {
     try {
       const element = document.getElementById("report-export-area");
       
-      // 1. Tambahkan class pembantu untuk menyembunyikan semua scrollbar sebelum snapshot
       element.classList.add("hide-scrollbar-for-export");
-
-      // Jeda 100ms agar browser sempat melakukan render ulang (repaint) visual CSS baru
       await new Promise((resolve) => setTimeout(resolve, 100));
 
       const dataUrl = await toPng(element, { cacheBust: true, pixelRatio: 2 });
       
-      // 2. Cabut kembali class pembantu agar scrollbar di halaman web normal kembali
       element.classList.remove("hide-scrollbar-for-export");
 
       const pdf = new jsPDF("p", "mm", "a4");
@@ -92,7 +88,6 @@ export default function AtasanReportPage() {
       setTimeout(() => setToast((prev) => ({ ...prev, show: false })), 3000);
     } catch (err) {
       console.error(err);
-      // Antisipasi jika error di tengah jalan, pastikan class dicopot kembali
       document.getElementById("report-export-area")?.classList.remove("hide-scrollbar-for-export");
       setToast({ show: true, message: "Gagal mengunduh dokumen PDF.", type: "error" });
     }

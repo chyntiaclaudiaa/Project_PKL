@@ -20,7 +20,6 @@ export default function AtasanSidebar({ activeMenu }) {
   ];
 
   return (
-    /* TAMBAHAN UTAMA: sticky top-0 h-screen z-50 agar sidebar terkunci & tidak ikut ter-scroll */
     <div className="sticky top-0 h-screen w-64 text-white flex flex-col justify-between border-r border-slate-300 sidebar-gradient-bg z-50 shrink-0">
       {/* TOP SECTION */}
       <div>

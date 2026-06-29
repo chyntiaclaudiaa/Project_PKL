@@ -26,7 +26,7 @@ export default function ReportWorkloadTable({ data }) {
             const selesaiCount = selesai;
 
             // 3. Total dari data backend (atau total akumulasi)
-            const totalCount = Number(user.total) || (progressCount + selesaiCount);
+            const totalCount = (progressCount + selesaiCount);
 
             // Perhitungan Persentase Tingkat Penyelesaian
             const percentage = totalCount > 0 ? Math.round((selesaiCount / totalCount) * 100) : 0;
@@ -43,7 +43,7 @@ export default function ReportWorkloadTable({ data }) {
               statusColor = "text-green-600 bg-green-50 border-green-200";
             }
 
-            // Mendapatkan inisial nama untuk avatar bulat (Contoh: Chairun Nisaq -> CN)
+            // Mendapatkan inisial nama
             const initials = user.name
               ? user.name.split(" ").map((n) => n[0]).join("").toUpperCase().substring(0, 2)
               : "?";

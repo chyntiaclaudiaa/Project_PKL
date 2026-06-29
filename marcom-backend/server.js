@@ -35,7 +35,7 @@ app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/atasan", requestAtasan);
 app.use("/api/comments", commentRoutes);
 app.use( "/api/report", reportRoutes);
-app.use( "/api/profile", atasanProfileRoutes);
+app.use("/api/atasan/profile", atasanProfileRoutes);
 app.get('/', (req, res) => {
     res.json({
         message: 'Server MarCom (Content Marcom Engagement & Tracking System) API Berjalan Lancar!',

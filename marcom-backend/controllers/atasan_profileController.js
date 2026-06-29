@@ -1,273 +1,130 @@
 const db = require("../config/db");
 const bcrypt = require("bcrypt");
 
-// Get Profile
-
+// 1. GET PROFILE
 const getProfile = async (req, res) => {
   try {
-
-    const userId =
-      req.user.id;
-
-    const result =
-      await db.query(
-        `
-        SELECT
-          id,
-          name,
-          email,
-          role,
-          divisi,
-          jabatan,
-          status
-        FROM users
-        WHERE id = $1
+    const userId = req.user.id;
+    const result = await db.query(
+      `
+        SELECT id, name, email, role, divisi, jabatan, status
+        FROM users WHERE id = $1
       `,
-        [userId]
-      );
-
-    if (
-      result.rows.length === 0
-    ) {
-      return res.status(404).json({
-        message:
-          "User tidak ditemukan",
-      });
-    }
-
-    res.status(200).json(
-      result.rows[0]
+      [userId]
     );
 
+    if (result.rows.length === 0) {
+      return res.status(404).json({ message: "User tidak ditemukan" });
+    }
+    res.status(200).json(result.rows[0]);
   } catch (err) {
-
     console.error(err);
-
-    res.status(500).json({
-      message:
-        "Gagal mengambil profil",
-    });
-
+    res.status(500).json({ message: "Gagal mengambil profil" });
   }
 };
 
-// CHANGE PASSWORD
+// 2. CHANGE PASSWORD
+const changePassword = async (req, res) => {
+  try {
+    const userId = req.params.id || req.user.id;
+    const { currentPassword, newPassword } = req.body;
 
-const changePassword =
-  async (req, res) => {
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({
+        message: "Semua field wajib diisi",
+      });
+    }
 
-    try {
+    const user = await db.query(
+      `SELECT password FROM users WHERE id = $1`,
+      [userId]
+    );
 
-      const userId =
-        req.user.id;
+    if (user.rows.length === 0) {
+      return res.status(404).json({ message: "User tidak ditemukan" });
+    }
 
-      const {
-        oldPassword,
-        newPassword,
-        confirmPassword,
-      } = req.body;
+    // Gunakan currentPassword untuk dicocokkan dengan hash database
+    const validPassword = await bcrypt.compare(
+      currentPassword,
+      user.rows[0].password
+    );
 
-      if (
-        !oldPassword ||
-        !newPassword ||
-        !confirmPassword
-      ) {
-        return res.status(400).json({
-          message:
-            "Semua field wajib diisi",
-        });
-      }
+    if (!validPassword) {
+      return res.status(400).json({ message: "Password lama salah" });
+    }
 
-      if (
-        newPassword !==
-        confirmPassword
-      ) {
-        return res.status(400).json({
-          message:
-            "Konfirmasi password tidak cocok",
-        });
-      }
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
 
-      const user =
-        await db.query(
-          `
-          SELECT password
-          FROM users
-          WHERE id = $1
-        `,
-          [userId]
-        );
-
-      if (
-        user.rows.length === 0
-      ) {
-        return res.status(404).json({
-          message:
-            "User tidak ditemukan",
-        });
-      }
-
-      const validPassword =
-        await bcrypt.compare(
-          oldPassword,
-          user.rows[0]
-            .password
-        );
-
-      if (
-        !validPassword
-      ) {
-        return res.status(400).json({
-          message:
-            "Password lama salah",
-        });
-      }
-
-      const hashedPassword =
-        await bcrypt.hash(
-          newPassword,
-          10
-        );
-
-      await db.query(
-        `
-        UPDATE users
-        SET
-          password = $1,
-          updated_at = NOW()
+    await db.query(
+      `
+        UPDATE users 
+        SET password = $1, updated_at = NOW() 
         WHERE id = $2
       `,
-        [
-          hashedPassword,
-          userId,
-        ]
-      );
+      [hashedPassword, userId]
+    );
 
-      res.status(200).json({
-        message:
-          "Password berhasil diubah",
-      });
+    res.status(200).json({ message: "Password berhasil diubah" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Gagal mengubah password" });
+  }
+};
 
-    } catch (err) {
+// 3. GANTI EMAIL 
+const changeEmail = async (req, res) => {
+  try {
+    const userId = req.params.id || req.user.id;
+    const { email, newEmail, confirmPassword } = req.body;
+    const targetEmail = newEmail || email;
 
-      console.error(err);
-
-      res.status(500).json({
-        message:
-          "Gagal mengubah password",
-      });
-
+    if (!targetEmail) {
+      return res.status(400).json({ message: "Email wajib diisi" });
     }
-  };
 
-// Ganti Email
-const changeEmail =
-  async (req, res) => {
-
-    try {
-
-      const userId =
-        req.user.id;
-
-      const {
-        newEmail,
-        password,
-      } = req.body;
-
-      if (
-        !newEmail ||
-        !password
-      ) {
-        return res.status(400).json({
-          message:
-            "Semua field wajib diisi",
-        });
+    if (confirmPassword) {
+      const user = await db.query(
+        `SELECT password FROM users WHERE id = $1`,
+        [userId]
+      );
+      if (user.rows.length === 0) {
+        return res.status(404).json({ message: "User tidak ditemukan" });
       }
-
-      const user =
-        await db.query(
-          `
-          SELECT password
-          FROM users
-          WHERE id = $1
-        `,
-          [userId]
-        );
-
-      if (
-        user.rows.length === 0
-      ) {
-        return res.status(404).json({
-          message:
-            "User tidak ditemukan",
-        });
+      const validPassword = await bcrypt.compare(confirmPassword, user.rows[0].password);
+      if (!validPassword) {
+        return res.status(400).json({ message: "Password salah" });
       }
+    }
 
-      const validPassword =
-        await bcrypt.compare(
-          password,
-          user.rows[0]
-            .password
-        );
+    const emailExist = await db.query(
+      `SELECT id FROM users WHERE email = $1 AND id != $2`,
+      [targetEmail, userId]
+    );
 
-      if (
-        !validPassword
-      ) {
-        return res.status(400).json({
-          message:
-            "Password salah",
-        });
-      }
+    if (emailExist.rows.length > 0) {
+      return res.status(400).json({ message: "Email sudah digunakan" });
+    }
 
-      const emailExist =
-        await db.query(
-          `
-          SELECT id
-          FROM users
-          WHERE email = $1
-        `,
-          [newEmail]
-        );
-
-      if (
-        emailExist.rows.length > 0
-      ) {
-        return res.status(400).json({
-          message:
-            "Email sudah digunakan",
-        });
-      }
-
+    const name = req.body.name;
+    if (name) {
       await db.query(
-        `
-        UPDATE users
-        SET
-          email = $1,
-          updated_at = NOW()
-        WHERE id = $2
-      `,
-        [
-          newEmail,
-          userId,
-        ]
+        `UPDATE users SET name = $1, email = $2, updated_at = NOW() WHERE id = $3`,
+        [name, targetEmail, userId]
       );
-
-      res.status(200).json({
-        message:
-          "Email berhasil diubah",
-      });
-
-    } catch (err) {
-
-      console.error(err);
-
-      res.status(500).json({
-        message:
-          "Gagal mengubah email",
-      });
-
+    } else {
+      await db.query(
+        `UPDATE users SET email = $1, updated_at = NOW() WHERE id = $2`,
+        [targetEmail, userId]
+      );
     }
-  };
+
+    res.status(200).json({ message: "Profil/Email berhasil diubah" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Gagal mengubah email" });
+  }
+};
 
 module.exports = {
   getProfile,

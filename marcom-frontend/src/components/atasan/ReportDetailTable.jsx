@@ -12,19 +12,13 @@ export default function ReportDetailTable({ data }) {
 
   return (
     <div className="bg-white custom-card-style overflow-visible w-full">
-      {/* Menghilangkan pembatas 'overflow-x-auto' agar layout tidak membuat window scrollbar buatan 
-      */}
       <div className="w-full overflow-visible">
-        {/* 'table-fixed' memaksa lebar kolom mengikuti alokasi persen (%) lebar yang kita tentukan 
-          agar tabel tidak melebar keluar batas halaman utama.
-        */}
         <table className="w-full text-sm border-collapse table-fixed">
           <thead>
             <tr className="border-b border-slate-200 text-slate-400 text-xs font-semibold uppercase tracking-wider bg-slate-50/50">
               <th className="px-4 py-3 text-left w-[5%]">No</th>
               <th className="px-4 py-3 text-left w-[37%]">Judul Konten</th>
               <th className="px-4 py-3 text-left w-[16%]">PIC</th>
-              {/* Diubah ke text-center agar pas dengan posisi badge di bawahnya */}
               <th className="px-4 py-3 text-center w-[14%]">Status</th>
               <th className="px-4 py-3 text-left w-[14%]">Deadline</th>
               <th className="px-4 py-3 text-left w-[14%]">Platform</th>
@@ -35,9 +29,6 @@ export default function ReportDetailTable({ data }) {
               <tr key={item.id} className="hover:bg-slate-50/80 transition">
                 <td className="px-4 py-3 text-slate-500 font-medium">{index + 1}</td>
                 
-                {/* 'break-words' & 'whitespace-normal': Jika judul terlalu panjang, kata otomatis terpotong 
-                  dan turun ke bawah baris baru, menghentikan dorongan horizontal yang memicu scrollbar bawah.
-                */}
                 <td className="px-4 py-3 font-medium text-slate-900 break-words whitespace-normal">
                   {item.title}
                 </td>
@@ -45,7 +36,6 @@ export default function ReportDetailTable({ data }) {
                 <td className="px-4 py-3 break-words whitespace-normal">{item.pic_name || "-"}</td>
                 
                 <td className="px-4 py-3 text-center">
-                  {/* Diperbarui menggunakan class padding/font-weight standar yang presisi */}
                   <span className={`px-3 py-1 rounded-full text-xs font-semibold inline-block ${getStatusBadgeClass(item.status)}`}>
                     {item.status}
                   </span>

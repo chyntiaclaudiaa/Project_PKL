@@ -1,11 +1,14 @@
+import React from 'react';
+import '../../style/MemberDashboard.css'; 
+
 export default function ReportSummaryCards({ summary }) {
   const cards = [
-    { title: "Total Request", value: summary.total, color: "#034EA2" },
-    { title: "Menunggu", value: summary.menunggu, color: "var(--color-menunggu)" },
-    { title: "Diproses", value: summary.diproses, color: "var(--color-diproses)" },
-    { title: "Selesai", value: summary.selesai, color: "var(--color-selesai)" },
-    { title: "Ditolak", value: summary.ditolak, color: "var(--color-ditolak)" },
-    { title: "Revisi", value: summary.revisi, color: "var(--color-revisi)" },
+    { title: "Total Request", value: summary.total, type: "total" },
+    { title: "Menunggu", value: summary.menunggu, type: "waiting" },
+    { title: "Diproses", value: summary.diproses, type: "process" },
+    { title: "Selesai", value: summary.selesai, type: "done" },
+    { title: "Ditolak", value: summary.ditolak, type: "rejected" },
+    { title: "Revisi", value: summary.revisi, type: "revision" },
   ];
 
   return (
@@ -14,21 +17,17 @@ export default function ReportSummaryCards({ summary }) {
         {cards.map((card) => (
           <div
             key={card.title}
-            className="rounded-2xl overflow-hidden"
-            style={{ backgroundColor: card.color }}
+            className={`summary-card ${card.type} rounded-2xl overflow-hidden`}
+            style={{ height: 'auto' }} 
           >
-            <div className="ml-[4px] bg-slate-50 rounded-2xl px-4 py-3 h-full">
-              <div
-                className="text-3xl font-bold leading-none"
-                style={{ color: card.color }}
-              >
-                {card.value || 0}
-              </div>
+            {/* Bagian Angka */}
+            <h2 className="text-3xl font-bold leading-none">
+              {card.value || 0}
+            </h2>
 
-              <div className="text-sm text-slate-500 mt-1">
-                {card.title}
-              </div>
-            </div>
+            <p className="text-sm text-slate-500 mt-1 mb-0">
+              {card.title}
+            </p>
           </div>
         ))}
       </div>
