@@ -34,14 +34,14 @@ const createUser = async (req, res) => {
         }
 
         let finalRole = role;
-        const teksPengecekan = `${jabatan || ''} ${divisi || ''}`.toLowerCase();
+        const cekJabatan = (jabatan || '').toLowerCase();
 
-        if (teksPengecekan.includes('pimpinan') || teksPengecekan.includes('pemimpin') || teksPengecekan.includes('manager')) {
-            finalRole = 'marcom_manager'; 
-        } else {
-            if (role !== 'admin' && role !== 'marcom_manager') {
-                finalRole = 'marcom_member';
-            }
+        if (cekJabatan === 'admin') {
+            finalRole = 'admin';
+        } else if (cekJabatan === 'pemimpin divisi') {
+            finalRole = 'marcom_manager';
+        } else if (cekJabatan === 'anggota') {
+            finalRole = 'marcom_member';
         }
 
         const saltRounds = 10;
@@ -57,7 +57,7 @@ const createUser = async (req, res) => {
         const createdUser = newUser.rows[0];
 
         // share folder "Marcomm Content" ke emailnya
-        const userRole = role || 'guest';
+        const userRole = finalRole || 'guest';
         const userStatus = status || 'Aktif';
         const isMarcomRole = userRole && userRole.includes('marcom');
 
@@ -97,15 +97,19 @@ const updateUser = async (req, res) => {
         const finalDivisi = divisi !== undefined ? divisi : existingUser.divisi;
         const finalJabatan = jabatan !== undefined ? jabatan : existingUser.jabatan;
         const finalStatus = status !== undefined ? status : existingUser.status; 
-        let inputRole = role !== undefined ? role : existingUser.role;
-
-        let finalRole = inputRole;
-        if (finalJabatan && (finalJabatan.toLowerCase().includes('pimpinan') || finalJabatan.toLowerCase().includes('pemimpin') || finalJabatan.toLowerCase().includes('manager'))) {
-            finalRole = 'marcom_manager'; 
-        } else if (inputRole !== 'admin') {
-            finalRole = 'marcom_member';  
+        
+        let finalRole = role !== undefined ? role : existingUser.role; 
+        const cekJabatan = (finalJabatan || '').toLowerCase();
+        
+        if (cekJabatan === 'admin') {
+            finalRole = 'admin';
+        } else if (cekJabatan === 'pemimpin divisi') {
+            finalRole = 'marcom_manager';
+        } else if (cekJabatan === 'anggota') {
+            finalRole = 'marcom_member';
         }
 
+        // Proses jika password diubah
         if (password && password.trim() !== '') {
             const saltRounds = 10;
             const hashedPassword = await bcrypt.hash(password, saltRounds);
@@ -121,6 +125,7 @@ const updateUser = async (req, res) => {
             return res.status(200).json({ message: 'Data dan Password pengguna berhasil diperbarui!', user: updatedUser.rows[0] });
         } 
         
+        // Proses jika password tidak diubah
         const updatedUser = await db.query(
             `UPDATE users 
              SET name = $1, email = $2, role = $3, divisi = $4, jabatan = $5, status = $6 
@@ -130,27 +135,25 @@ const updateUser = async (req, res) => {
         );
 
         const updatedUserData = updatedUser.rows[0];
-        const newEmail = email || oldUser.email;
-        const newRole = role || oldUser.role;
-        const newStatus = status || oldUser.status;
-        const isMarcomRole = newRole && newRole.includes('marcom');
+        const isMarcomRole = finalRole && finalRole.includes('marcom');
 
-        if (newStatus === 'Aktif' && isMarcomRole) {
-            if (!oldUser.email.includes('marcom') || oldUser.status !== 'Aktif') {
-                const shareSuccess = await shareMarcomFolderToUser(newEmail);
+        // Logika Google Drive Menggunakan existingUser (bukan oldUser)
+        if (finalStatus === 'Aktif' && isMarcomRole) {
+            if (!existingUser.email.includes('marcom') || existingUser.status !== 'Aktif') {
+                const shareSuccess = await shareMarcomFolderToUser(finalEmail);
                 if (shareSuccess) {
-                    console.log(`UPDATE USER: ${newEmail} - Marcomm Content folder shared (activated + marcom role)`);
+                    console.log(`UPDATE USER: ${finalEmail} - Marcomm Content folder shared (activated + marcom role)`);
                 }
             }
-        } else if (newStatus === 'Nonaktif') {
-            const revokeSuccess = await revokeMarcomFolderFromUser(newEmail);
+        } else if (finalStatus === 'Nonaktif') {
+            const revokeSuccess = await revokeMarcomFolderFromUser(finalEmail);
             if (revokeSuccess) {
-                console.log(`UPDATE USER: ${newEmail} - Marcomm Content folder access revoked (deactivated)`);
+                console.log(`UPDATE USER: ${finalEmail} - Marcomm Content folder access revoked (deactivated)`);
             }
-        } else if (newStatus === 'Aktif' && !isMarcomRole) {
-            const revokeSuccess = await revokeMarcomFolderFromUser(newEmail);
+        } else if (finalStatus === 'Aktif' && !isMarcomRole) {
+            const revokeSuccess = await revokeMarcomFolderFromUser(finalEmail);
             if (revokeSuccess) {
-                console.log(`UPDATE USER: ${newEmail} - Marcomm Content folder access revoked (no marcom role)`);
+                console.log(`UPDATE USER: ${finalEmail} - Marcomm Content folder access revoked (no marcom role)`);
             }
         }
 
@@ -159,7 +162,7 @@ const updateUser = async (req, res) => {
             user: updatedUserData
         });
     } catch (err) {
-        console.error(err.message);
+        console.error("ERROR SAAT UPDATE USER:", err.message);
         res.status(500).json({ message: 'Gagal memperbarui data pengguna.' });
     }
 };
