@@ -71,7 +71,7 @@ const Login = () => {
                 navigate('/admin/dashboard');
             } else if (user.role === 'marcom_member') {
                 navigate('/anggota/dashboard');
-            } else if (user.role === 'marcom_supervisor') {
+            } else if (user.role === 'Pemimpin Divisi') {
                 navigate('/atasan/dashboard');
             } else {
                 setError('Role pengguna tidak dikenali.');

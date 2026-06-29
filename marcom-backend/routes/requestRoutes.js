@@ -12,7 +12,8 @@ const {
     updateRequestStatus,
     uploadResultFile,
     addComment,
-    deleteComment
+    deleteComment,
+    getNotifications
 } = require('../controllers/requestController');
 
 const {
@@ -66,6 +67,14 @@ router.get(
     verifyToken,
     allowRoles('marcom_member', 'marcom_supervisor', 'marcom_manager', 'admin'),
     getPicUsers
+);
+
+// Notifikasi anggota
+router.get(
+    '/notifications',
+    verifyToken,
+    isMarcomMember,
+    getNotifications
 );
 
 // 6. Mengambil detail request

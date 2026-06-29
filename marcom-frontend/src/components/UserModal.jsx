@@ -32,9 +32,7 @@ const UserModal = ({
     ];
 
     const jabatanOptions = [
-        'Staff/Anggota', 'Pemimpin Divisi', 'PJ. Pemimpin Divisi', 'Pemimpin Unit',
-        'PJ. Pemimpin Unit', 'Pemimpin Unit Kerja Khusus (UKK)', 'PJ. Pemimpin Unit Kerja Khusus (UKK)',
-        'Project Leader', 'Unit Kantor', 'Eksternal/Lain-lain'
+        'Staff/Anggota', 'Pemimpin Divisi'
     ];
 
     const statusOptions = ['Aktif', 'Nonaktif'];
