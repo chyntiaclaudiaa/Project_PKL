@@ -7,14 +7,18 @@ import {
 } from "../services/atasan_profileService";
 
 export default function AtasanProfilePage() {
-  const [activeTab, setActiveTab] = useState("identity");
+  // Menggunakan localStorage agar state tab tetap tersimpan saat pindah halaman
+  const [activeTab, setActiveTab] = useState(() => {
+    return localStorage.getItem("profileActiveTab") || "identity";
+  });
   const [profile, setProfile] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // State untuk kontrol Pop-up / Toast Notification
+  // State untuk kontrol Toast Notification
   const [toast, setToast] = useState({
     show: false,
     message: "",
-    type: "success", // 'success' atau 'error'
+    type: "success",
   });
 
   const [passwordForm, setPasswordForm] = useState({
@@ -28,26 +32,22 @@ export default function AtasanProfilePage() {
     password: "",
   });
 
+  // Simpan state tab ke localStorage setiap kali berubah
   useEffect(() => {
-    setEmailForm({
-      newEmail: "",
-      password: "",
-    });
+    localStorage.setItem("profileActiveTab", activeTab);
+  }, [activeTab]);
 
-    setPasswordForm({
-      oldPassword: "",
-      newPassword: "",
-      confirmPassword: "",
-    });
-
+  useEffect(() => {
+    setEmailForm({ newEmail: "", password: "" });
+    setPasswordForm({ oldPassword: "", newPassword: "", confirmPassword: "" });
     loadProfile();
   }, []);
 
-  // Fungsi pembantu untuk memicu pop-up modern
   const showNotification = (message, type = "success") => {
-    setToast({ show: true, message, type });
-    
-    // Pop-up otomatis hilang setelah 4 detik
+    toast.show && setToast({ show: false, message: "", type: "success" }); // Reset prevent glitch
+    setTimeout(() => {
+      setToast({ show: true, message, type });
+    }, 50);
     setTimeout(() => {
       setToast({ show: false, message: "", type: "success" });
     }, 4000);
@@ -55,10 +55,13 @@ export default function AtasanProfilePage() {
 
   const loadProfile = async () => {
     try {
+      setIsLoading(true);
       const data = await getProfile();
       setProfile(data);
     } catch (err) {
       console.error(err);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -66,17 +69,9 @@ export default function AtasanProfilePage() {
     e.preventDefault();
     try {
       await changePassword(passwordForm);
-
-      // Menggunakan pop-up modern sukses
       showNotification("Password berhasil diubah!", "success");
-
-      setPasswordForm({
-        oldPassword: "",
-        newPassword: "",
-        confirmPassword: "",
-      });
+      setPasswordForm({ oldPassword: "", newPassword: "", confirmPassword: "" });
     } catch (err) {
-      // Menggunakan pop-up modern gagal
       const errMsg = err.response?.data?.message || "Gagal mengubah password";
       showNotification(errMsg, "error");
     }
@@ -86,45 +81,34 @@ export default function AtasanProfilePage() {
     e.preventDefault();
     try {
       await changeEmail(emailForm);
-
-      // Menggunakan pop-up modern sukses
       showNotification("Email berhasil diubah!", "success");
-
-      setEmailForm({
-        newEmail: "",
-        password: "",
-      });
-
+      setEmailForm({ newEmail: "", password: "" });
       loadProfile();
     } catch (err) {
-      // Menggunakan pop-up modern gagal
       const errMsg = err.response?.data?.message || "Gagal mengubah email";
       showNotification(errMsg, "error");
     }
   };
 
-  if (!profile) return null;
-
   return (
-    <div className="flex h-screen bg-[#F6F8FB] relative">
+    <div className="flex h-screen overflow-hidden bg-[#F6F8FB] relative font-sans text-slate-700">
       
-      {/* KODE POP-UP / TOAST MODERN */}
+      {/* GLOBAL-STYLED NOTIFICATION / TOAST */}
       {toast.show && (
-        <div className="fixed top-5 right-5 z-50 animate-bounce-short">
+        <div className="fixed top-5 right-5 z-50 transition-all duration-300">
           <div
-            className={`flex items-center gap-3 px-5 py-3.5 rounded-xl shadow-lg border text-sm font-medium transition-all duration-300 ${
+            className={`flex items-center gap-3 px-5 py-3 rounded-lg shadow-md border text-sm font-medium text-white ${
               toast.type === "success"
-                ? "bg-emerald-50 border-emerald-200 text-emerald-800"
-                : "bg-rose-50 border-rose-200 text-rose-800"
+                ? "bg-[#1D9E75] border-[#1D9E75]" 
+                : "bg-[#E7000B] border-[#E7000B]" 
             }`}
           >
-            {/* Icon Status */}
             {toast.type === "success" ? (
-              <svg className="w-5 h-5 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+              <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
               </svg>
             ) : (
-              <svg className="w-5 h-5 text-rose-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+              <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
               </svg>
             )}
@@ -133,197 +117,213 @@ export default function AtasanProfilePage() {
         </div>
       )}
 
-      <AtasanSidebar activeMenu="profile" />
+      {/* Sidebar tetap mengunci h-screen */}
+      <div className="sticky top-0 h-screen z-20">
+        <AtasanSidebar activeMenu="profile" />
+      </div>
 
-      <div className="flex-1 overflow-y-scroll">
-        <div className="bg-white border-b border-slate-200 px-8 py-4">
-          <h1 className="text-xl font-bold">Profil Saya</h1>
-        </div>
+      {/* CONTAINER KANAN: Scrollbar disematkan di sini agar memanjang melewati header */}
+      <div className="flex-1 h-screen flex flex-col overflow-y-auto bg-[#F6F8FB]">
+        
+        {/* HEADER MINI (FIXED / POSITION STICKY) */}
+        <header className="sticky top-0 bg-white border-b border-slate-100 px-8 py-5 flex flex-col justify-center shrink-0 z-10">
+          <h1 className="text-base font-bold text-[#0D1B3E] leading-tight">Profile Saya</h1>
+        </header>
 
-        <div className="p-6">
-          <div className="max-w-2xl mx-auto">
-            <div className="bg-white border border-slate-200 rounded-2xl shadow-sm p-5">
-              
-              {/* TAB */}
-              <div className="flex w-full gap-3 mb-6">
-                <button
-                  onClick={() => setActiveTab("identity")}
-                  className={`flex-1 px-6 py-2 rounded-xl text-sm font-medium border transition ${
-                    activeTab === "identity"
-                      ? "bg-orange-700 text-white border-orange-700"
-                      : "bg-white text-slate-600 border-slate-300 hover:border-orange-300"
-                  }`}
-                >
-                  Identitas
-                </button>
+        {/* MAIN CONTAINER (Isi Form dan Konten Utama) */}
+        <main className="p-6 md:p-8 max-w-md flex-1">
+          
+          {/* TAB BUTTONS (Terbagi 2 sama panjang memenuhi lebar card) */}
+          <div className="flex w-full gap-2 mb-6">
+            <button
+              onClick={() => setActiveTab("identity")}
+              className={`flex-1 text-center py-2.5 rounded-lg text-sm font-semibold border border-slate-200 transition-all ${
+                activeTab === "identity"
+                  ? "bg-white text-[#E3791C] shadow-sm"
+                  : "bg-[#EAEFF5] text-slate-500 border-transparent hover:bg-slate-200"
+              }`}
+            >
+              Identitas
+            </button>
 
-                <button
-                  onClick={() => setActiveTab("security")}
-                  className={`flex-1 px-6 py-2 rounded-xl text-sm font-medium border transition ${
-                    activeTab === "security"
-                      ? "bg-orange-700 text-white border-orange-700"
-                      : "bg-white text-slate-600 border-slate-300 hover:border-orange-300"
-                  }`}
-                >
-                  Keamanan Akun
-                </button>
-              </div>
+            <button
+              onClick={() => setActiveTab("security")}
+              className={`flex-1 text-center py-2.5 rounded-lg text-sm font-semibold border border-slate-200 transition-all ${
+                activeTab === "security"
+                  ? "bg-white text-[#E3791C] shadow-sm"
+                  : "bg-[#EAEFF5] text-slate-500 border-transparent hover:bg-slate-200"
+              }`}
+            >
+              Keamanan Akun
+            </button>
+          </div>
 
-              {/* IDENTITAS */}
+          {/* KONTEN UTAMA */}
+          {isLoading ? (
+            <div className="text-center py-10 text-slate-400 text-sm">Memuat data profil...</div>
+          ) : !profile ? (
+            <div className="text-center py-10 text-rose-500 text-sm">Gagal memuat profil.</div>
+          ) : (
+            <>
+              {/* TAB CONTENT: IDENTITAS */}
               {activeTab === "identity" && (
-                <>
-                  <div className="flex justify-center mb-5">
-                    <div className="w-14 h-14 rounded-full bg-orange-100 flex items-center justify-center text-2xl font-bold text-orange-700">
+                <div className="bg-white border border-slate-300 rounded-xl p-6 shadow-none w-full">
+                  <div className="flex justify-center mb-6">
+                    <div className="w-16 h-16 rounded-full bg-orange-50 border border-orange-200 flex items-center justify-center text-2xl font-bold text-[#E3791C]">
                       {profile.name?.charAt(0)}
                     </div>
                   </div>
 
-                  <div className="space-y-3 text-sm">
-                    <div className="grid grid-cols-[140px_1fr] items-center gap-3">
-                      <span className="font-medium text-slate-700">Nama Lengkap</span>
-                      <div className="bg-slate-100 border border-slate-300 rounded-lg px-3 py-2">
-                        {profile.name}
-                      </div>
+                  <div className="space-y-4 text-sm">
+                    <div>
+                      <label className="block font-semibold text-slate-700 mb-1.5">Nama Lengkap</label>
+                      <input
+                        type="text"
+                        disabled
+                        value={profile.name || ""}
+                        className="w-full bg-[#EAEFF5] border border-slate-200 rounded-lg px-4 py-2.5 text-slate-600 outline-none"
+                      />
                     </div>
 
-                    <div className="grid grid-cols-[140px_1fr] items-center gap-3">
-                      <span className="font-medium text-slate-700">Email</span>
-                      <div className="bg-slate-100 border border-slate-300 rounded-lg px-3 py-2">
-                        {profile.email}
-                      </div>
+                    <div>
+                      <label className="block font-semibold text-slate-700 mb-1.5">Email</label>
+                      <input
+                        type="text"
+                        disabled
+                        value={profile.email || ""}
+                        className="w-full bg-[#EAEFF5] border border-slate-200 rounded-lg px-4 py-2.5 text-slate-600 outline-none"
+                      />
                     </div>
 
-                    <div className="grid grid-cols-[140px_1fr] items-center gap-3">
-                      <span className="font-medium text-slate-700">Role</span>
-                      <div className="bg-slate-100 border border-slate-300 rounded-lg px-3 py-2">
-                        {profile.role}
-                      </div>
+                    <div>
+                      <label className="block font-semibold text-slate-700 mb-1.5">Role</label>
+                      <input
+                        type="text"
+                        disabled
+                        value={profile.role || ""}
+                        className="w-full bg-[#EAEFF5] border border-slate-200 rounded-lg px-4 py-2.5 text-slate-600 outline-none"
+                      />
                     </div>
 
-                    <div className="grid grid-cols-[140px_1fr] items-center gap-3">
-                      <span className="font-medium text-slate-700">Divisi</span>
-                      <div className="bg-slate-100 border border-slate-300 rounded-lg px-3 py-2">
-                        {profile.divisi || "-"}
-                      </div>
+                    <div>
+                      <label className="block font-semibold text-slate-700 mb-1.5">Divisi</label>
+                      <input
+                        type="text"
+                        disabled
+                        value={profile.divisi || "-"}
+                        className="w-full bg-[#EAEFF5] border border-slate-200 rounded-lg px-4 py-2.5 text-slate-600 outline-none"
+                      />
                     </div>
 
-                    <div className="grid grid-cols-[140px_1fr] items-center gap-3">
-                      <span className="font-medium text-slate-700">Jabatan</span>
-                      <div className="bg-slate-100 border border-slate-300 rounded-lg px-3 py-2">
-                        {profile.jabatan || "-"}
-                      </div>
+                    <div>
+                      <label className="block font-semibold text-slate-700 mb-1.5">Jabatan</label>
+                      <input
+                        type="text"
+                        disabled
+                        value={profile.jabatan || "-"}
+                        className="w-full bg-[#EAEFF5] border border-slate-200 rounded-lg px-4 py-2.5 text-slate-600 outline-none"
+                      />
                     </div>
 
-                    <div className="mt-4 bg-orange-50 border border-orange-200 text-orange-700 text-xs rounded-lg p-3">
+                    <div className="mt-5 bg-orange-50 border border-orange-200 text-[#E3791C] text-xs font-semibold rounded-lg p-3 text-center">
                       Nama, role, divisi, dan jabatan dikelola oleh Admin Sistem.
                     </div>
                   </div>
-                </>
+                </div>
               )}
 
-              {/* KEAMANAN */}
+              {/* TAB CONTENT: KEAMANAN */}
               {activeTab === "security" && (
-                <div className="space-y-5">
-                  <form
-                    onSubmit={handlePasswordChange}
-                    className="border border-slate-200 rounded-xl p-4"
-                  >
-                    <h2 className="text-lg font-semibold mb-4">Ganti Password</h2>
+                <div className="space-y-6 w-full">
+                  {/* Form Ganti Password */}
+                  <form onSubmit={handlePasswordChange} className="bg-white border border-slate-300 rounded-xl p-6 shadow-none">
+                    <h2 className="text-base font-bold text-[#0D1B3E] mb-4">Ganti Password</h2>
+                    
+                    <div className="space-y-4">
+                      <div>
+                        <label className="block text-sm font-semibold text-slate-700 mb-1.5">Password Lama</label>
+                        <input
+                          type="password"
+                          placeholder="••••••••"
+                          value={passwordForm.oldPassword}
+                          onChange={(e) => setPasswordForm({ ...passwordForm, oldPassword: e.target.value })}
+                          className="w-full border border-slate-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-[#034EA2]"
+                        />
+                      </div>
 
-                    <div className="space-y-3">
-                      <input
-                        type="password"
-                        placeholder="Password Lama"
-                        value={passwordForm.oldPassword}
-                        onChange={(e) =>
-                          setPasswordForm({
-                            ...passwordForm,
-                            oldPassword: e.target.value,
-                          })
-                        }
-                        className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm"
-                      />
+                      <div>
+                        <label className="block text-sm font-semibold text-slate-700 mb-1.5">Password Baru</label>
+                        <input
+                          type="password"
+                          placeholder="Masukkan password baru"
+                          value={passwordForm.newPassword}
+                          onChange={(e) => setPasswordForm({ ...passwordForm, newPassword: e.target.value })}
+                          className="w-full border border-slate-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-[#034EA2]"
+                        />
+                      </div>
 
-                      <input
-                        type="password"
-                        placeholder="Password Baru"
-                        value={passwordForm.newPassword}
-                        onChange={(e) =>
-                          setPasswordForm({
-                            ...passwordForm,
-                            newPassword: e.target.value,
-                          })
-                        }
-                        className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm"
-                      />
-
-                      <input
-                        type="password"
-                        placeholder="Konfirmasi Password Baru"
-                        value={passwordForm.confirmPassword}
-                        onChange={(e) =>
-                          setPasswordForm({
-                            ...passwordForm,
-                            confirmPassword: e.target.value,
-                          })
-                        }
-                        className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm"
-                      />
+                      <div>
+                        <label className="block text-sm font-semibold text-slate-700 mb-1.5">Konfirmasi Password Baru</label>
+                        <input
+                          type="password"
+                          placeholder="Ulangi password baru"
+                          value={passwordForm.confirmPassword}
+                          onChange={(e) => setPasswordForm({ ...passwordForm, confirmPassword: e.target.value })}
+                          className="w-full border border-slate-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-[#034EA2]"
+                        />
+                      </div>
 
                       <button
                         type="submit"
-                        className="w-full bg-orange-700 hover:bg-orange-800 text-white rounded-lg py-2.5 text-sm font-medium"
+                        className="w-full bg-[#034EA2] hover:bg-[#023b7a] text-white rounded-lg py-2.5 text-sm font-semibold transition-all mt-2"
                       >
                         Simpan Password
                       </button>
                     </div>
                   </form>
 
-                  <form
-                    onSubmit={handleEmailChange}
-                    autoComplete="off"
-                    className="border border-slate-200 rounded-xl p-4"
-                  >
-                    <h2 className="text-lg font-semibold mb-4">Ganti Email</h2>
+                  {/* Form Ganti Email */}
+                  <form onSubmit={handleEmailChange} autoComplete="off" className="bg-white border border-slate-300 rounded-xl p-6 shadow-none">
+                    <h2 className="text-base font-bold text-[#0D1B3E] mb-4">Ganti Email</h2>
 
-                    <div className="space-y-3">
-                      <input
-                        disabled
-                        value={profile.email}
-                        className="w-full bg-slate-100 border border-slate-300 rounded-lg px-3 py-2 text-sm"
-                      />
+                    <div className="space-y-4">
+                      <div>
+                        <label className="block text-sm font-semibold text-slate-700 mb-1.5">Email Saat Ini</label>
+                        <input
+                          type="text"
+                          disabled
+                          value={profile.email || ""}
+                          className="w-full bg-[#EAEFF5] border border-slate-200 rounded-lg px-4 py-2.5 text-sm text-slate-500 outline-none"
+                        />
+                      </div>
 
-                      <input
-                        type="email"
-                        autoComplete="new-email"
-                        placeholder="Email Baru"
-                        value={emailForm.newEmail}
-                        onChange={(e) =>
-                          setEmailForm({
-                            ...emailForm,
-                            newEmail: e.target.value,
-                          })
-                        }
-                        className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm"
-                      />
+                      <div>
+                        <label className="block text-sm font-semibold text-slate-700 mb-1.5">Email Baru</label>
+                        <input
+                          type="email"
+                          autoComplete="new-email"
+                          placeholder="Masukkan email baru"
+                          value={emailForm.newEmail}
+                          onChange={(e) => setEmailForm({ ...emailForm, newEmail: e.target.value })}
+                          className="w-full border border-slate-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-[#034EA2]"
+                        />
+                      </div>
 
-                      <input
-                        type="password"
-                        autoComplete="new-password"
-                        placeholder="Konfirmasi Password"
-                        value={emailForm.password}
-                        onChange={(e) =>
-                          setEmailForm({
-                            ...emailForm,
-                            password: e.target.value,
-                          })
-                        }
-                        className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm"
-                      />
+                      <div>
+                        <label className="block text-sm font-semibold text-slate-700 mb-1.5">Password Konfirmasi</label>
+                        <input
+                          type="password"
+                          autoComplete="new-password"
+                          placeholder="Masukkan password konfirmasi"
+                          value={emailForm.password}
+                          onChange={(e) => setEmailForm({ ...emailForm, password: e.target.value })}
+                          className="w-full border border-slate-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-[#034EA2]"
+                        />
+                      </div>
 
                       <button
                         type="submit"
-                        className="w-full bg-orange-700 hover:bg-orange-800 text-white rounded-lg py-2.5 text-sm font-medium"
+                        className="w-full bg-[#034EA2] hover:bg-[#023b7a] text-white rounded-lg py-2.5 text-sm font-semibold transition-all mt-2"
                       >
                         Simpan Email
                       </button>
@@ -331,10 +331,10 @@ export default function AtasanProfilePage() {
                   </form>
                 </div>
               )}
+            </>
+          )}
 
-            </div>
-          </div>
-        </div>
+        </main>
       </div>
     </div>
   );

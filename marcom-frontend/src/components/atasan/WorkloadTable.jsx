@@ -1,135 +1,111 @@
-export default function WorkloadTable({ data }) {
-  const totals = data.reduce(
-    (acc, item) => ({
-      menunggu: acc.menunggu + Number(item.menunggu || 0),
-      diproses: acc.diproses + Number(item.diproses || 0),
-      revisi: acc.revisi + Number(item.revisi || 0),
-      selesai: acc.selesai + Number(item.selesai || 0),
-      ditolak: acc.ditolak + Number(item.ditolak || 0),
-      total_request:
-        acc.total_request +
-        Number(item.total_request || 0),
-    }),
-    {
-      menunggu: 0,
-      diproses: 0,
-      revisi: 0,
-      selesai: 0,
-      ditolak: 0,
-      total_request: 0,
-    }
-  );
+import "../../atasan_dashboard.css";
+
+export default function WorkloadTable({ data, globalTotal }) {
+  // Ambil total seluruh request sistem (keseluruhan tugas) sebagai pembagi global workload bar
+  const totalSistem = Number(globalTotal || 0) > 0 ? Number(globalTotal) : 1;
 
   return (
-    <div className="bg-white rounded-xl shadow-sm p-5 border-2 border-slate-200 ">
-      <h2 className="text-lg font-semibold mb-4">
-        Workload Anggota
-      </h2>
+    <div className="bg-white rounded-xl custom-card-style p-5">
+      <h3 className="text-sm font-bold text-slate-800 mb-4">Detail Workload Anggota</h3>
 
-      <table className="w-full text-sm">
-        <thead>
-          <tr className="border-b border-slate-200 bg-slate-50">
-            <th className="text-left py-3 px-2">
-              Nama
-            </th>
-
-            <th className="py-3 px-2 text-amber-500 font-semibold">
-              Menunggu
-            </th>
-
-            <th className="py-3 px-2 text-blue-500 font-semibold">
-              Diproses
-            </th>
-
-            <th className="py-3 px-2 text-orange-600 font-semibold">
-              Revisi
-            </th>
-
-            <th className="py-3 px-2 text-green-600 font-semibold">
-              Selesai
-            </th>
-
-            <th className="py-3 px-2 text-red-500 font-semibold">
-              Ditolak
-            </th>
-
-            <th className="py-3 px-2 font-semibold">
-              Total
-            </th>
-          </tr>
-        </thead>
-
-        <tbody>
-          {data.map((item) => (
-            <tr
-              key={item.id}
-              className="
-                border-b border-gray-100
-                hover:bg-slate-50
-                transition
-              "
-            >
-              <td className="py-3 px-2 font-medium text-slate-700">
-                {item.name}
-              </td>
-
-              <td className="text-center text-amber-500 font-medium">
-                {item.menunggu}
-              </td>
-
-              <td className="text-center text-blue-500 font-medium">
-                {item.diproses}
-              </td>
-
-              <td className="text-center text-orange-600 font-medium">
-                {item.revisi}
-              </td>
-
-              <td className="text-center text-green-600 font-medium">
-                {item.selesai}
-              </td>
-
-              <td className="text-center text-red-500 font-medium">
-                {item.ditolak}
-              </td>
-
-              <td className="text-center font-bold text-slate-700">
-                {item.total_request}
-              </td>
+      <div className="overflow-x-auto">
+        <table className="w-full text-xs text-left">
+          <thead>
+            <tr className="border-b border-slate-100 text-[10px] text-slate-400 font-bold uppercase tracking-wider bg-slate-50/50">
+              <th className="py-3 px-4">Anggota</th>
+              <th className="py-3 px-2 text-center">Progres</th>
+              <th className="py-3 px-2 text-center">Selesai</th>
+              <th className="py-3 px-2 text-center">Ditolak</th>
+              <th className="py-3 px-2 text-center">Total</th>
+              <th className="py-3 px-4 text-center">Beban Kerja</th>
             </tr>
-          ))}
+          </thead>
 
-          <tr className="bg-slate-50 border-t-2 border-slate-300 font-bold">
-            <td className="py-3 px-2">
-              Total
-            </td>
+          <tbody className="divide-y divide-slate-100">
+            {data && data.length > 0 ? (
+              data.map((item) => {
+                const namaInisial = item.name 
+                  ? item.name.split(" ").map(n => n[0]).join("").substring(0,2).toUpperCase() 
+                  : "CN";
+                
+                // Mengambil property murni dari backend controller Anda
+                const progresReq = Number(item.progres || 0);
+                const selesaiReq = Number(item.selesai || 0);
+                const ditolakReq = Number(item.ditolak || 0);
+                const totalReq = Number(item.total_request || 0);
+                
+                // Rumus Beban Kerja: Total tugas dia / Keseluruhan tugas yang ada di sistem
+                const loadPercent = Math.min((totalReq / totalSistem) * 100, 100);
 
-            <td className="text-center text-amber-500">
-              {totals.menunggu}
-            </td>
+                return (
+                  <tr key={item.id} className="hover:bg-slate-50/80 transition-colors font-medium text-slate-700">
+                    {/* Kolom Anggota */}
+                    <td className="py-3 px-4 flex items-center gap-3">
+                      <div className="w-7 h-7 rounded-full bg-orange-700 text-white flex items-center justify-center font-bold text-[10px]">
+                        {namaInisial}
+                      </div>
+                      <span className="font-bold text-slate-800">{item.name}</span>
+                    </td>
 
-            <td className="text-center text-blue-500">
-              {totals.diproses}
-            </td>
+                    {/* Kolom Progres */}
+                    <td 
+                      className="py-3 px-2 text-center font-bold"
+                      style={{ color: "var(--color-diproses)" }}
+                    >
+                      {progresReq}
+                    </td>
 
-            <td className="text-center text-orange-600">
-              {totals.revisi}
-            </td>
+                    {/* Kolom Selesai */}
+                    <td 
+                      className="py-3 px-2 text-center font-bold"
+                      style={{ color: "var(--color-selesai)" }}
+                    >
+                      {selesaiReq}
+                    </td>
 
-            <td className="text-center text-green-600">
-              {totals.selesai}
-            </td>
+                    {/* Kolom Ditolak */}
+                    <td 
+                      className="py-3 px-2 text-center font-bold"
+                      style={{ color: "var(--color-ditolak)" }}
+                    >
+                      {ditolakReq}
+                    </td>
 
-            <td className="text-center text-red-500">
-              {totals.ditolak}
-            </td>
+                    {/* Kolom Total */}
+                    <td className="py-3 px-2 text-center text-slate-500 font-bold">
+                      {totalReq}
+                    </td>
 
-            <td className="text-center text-slate-700">
-              {totals.total_request}
-            </td>
-          </tr>
-        </tbody>
-      </table>
+                    {/* Kolom Beban Kerja (Struktur Center Rapi) */}
+                    <td className="py-3 px-4 text-center">
+                      <div className="flex flex-col items-center justify-center gap-1.5 w-full max-w-[140px] mx-auto">
+                        <div className="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
+                          <div 
+                            className="h-full rounded-full transition-all duration-300" 
+                            style={{ 
+                              width: `${loadPercent}%`,
+                              backgroundColor: "var(--color-menunggu)" 
+                            }}
+                          />
+                        </div>
+                        <span className="text-[10px] text-slate-400 font-bold whitespace-nowrap">
+                          {totalReq}/{globalTotal || 0} ({loadPercent.toFixed(0)}%)
+                        </span>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })
+            ) : (
+              <tr>
+                <td colSpan="6" className="py-8 text-center text-slate-400 font-bold">
+                  Tidak ada data workload anggota.
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }

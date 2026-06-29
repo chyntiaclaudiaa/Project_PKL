@@ -1,16 +1,9 @@
 import { useEffect, useState } from "react";
 import CommentSection from "../components/atasan/CommentSection";
-import AtasanSidebar from "../components/atasan/AtasanSidebar";
-
-
-import {
-  ArrowLeft,
-  Star,
-} from "lucide-react";
+import { X, MessageCircle } from "lucide-react"; 
 
 import {
   getRequestById,
-  togglePriority,
 } from "../services/atasan_requestService";
 
 import {
@@ -18,422 +11,160 @@ import {
   addComment,
 } from "../services/atasan_commentService";
 
-import {
-  useNavigate,
-  useParams,
-  useLocation,
-} from "react-router-dom";
-
-export default function AtasanRequestDetailPage() {
-
-  const { id } = useParams();
-  const navigate = useNavigate();
-  const location = useLocation();
-
-  const source =
-    location.state?.source ||
-    "request";
-
-  const [request, setRequest] =
-    useState(null);
-
-  const [comments, setComments] =
-    useState([]);
+export default function AtasanRequestDetailPage({ requestId, onClose }) {
+  const [request, setRequest] = useState(null);
+  const [comments, setComments] = useState([]);
 
   useEffect(() => {
-    loadData();
-  }, [id]);
+    if (requestId) {
+      loadData();
+    }
+  }, [requestId]);
 
   const loadData = async () => {
-
     try {
-
-      const [
-        requestRes,
-        commentRes,
-      ] = await Promise.all([
-        getRequestById(id),
-        getComments(id),
+      const [requestRes, commentRes] = await Promise.all([
+        getRequestById(requestId),
+        getComments(requestId),
       ]);
-
       setRequest(requestRes.data);
       setComments(commentRes.data);
-
     } catch (err) {
       console.error(err);
     }
   };
 
-  const handlePriority =
-    async () => {
+  const handleSubmitComment = async (commentText) => {
+    if (!commentText.trim()) return;
+    try {
+      const user = JSON.parse(localStorage.getItem("user"));
+      await addComment({
+        request_id: requestId,
+        user_id: user.id,
+        comment: commentText,
+      });
+      await loadData();
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
-      try {
-
-        await togglePriority(id);
-        await loadData();
-
-      } catch (err) {
-        console.error(err);
-      }
-    };
-
-  const handleSubmitComment =
-    async (commentText) => {
-
-      if (!commentText.trim()) return;
-
-      try {
-
-        const user =
-          JSON.parse(
-            localStorage.getItem("user")
-          );
-
-        await addComment({
-          request_id: id,
-          user_id: user.id,
-          comment: commentText,
-        });
-
-        await loadData();
-
-      } catch (err) {
-        console.error(err);
-      }
-    };
-
-  if (!request) {
-
-    return (
-      <div className="flex h-screen bg-[#F6F8FB]">
-        <AtasanSidebar
-          activeMenu={
-            source === "dashboard"
-              ? "dashboard"
-              : "request"
-          }
-        />
-      </div>
-    );
-  }
+  if (!request) return null; 
 
   return (
-
-    <div className="flex h-screen bg-[#F6F8FB]">
-
-     <AtasanSidebar activeMenu={source === "dashboard" ? "dashboard" : "request"}/>
-
-      <div className="flex-1 overflow-auto">
-
-        {/* HEADER */}
-
-        <div
-          className="
-            bg-white
-            border-b
-            border-gray-200
-            px-8
-            py-5
-            flex
-            justify-between
-            items-center
-          "
+    /* DIUBAH: Menambahkan onClick={onClose} pada div backdrop luar ini.
+      Ketika pengguna mengklik area buram/gelap di luar card, fungsi onClose dijalankan.
+    */
+    <div 
+      onClick={onClose}
+      className="fixed inset-0 bg-black/40 backdrop-blur-[2px] flex justify-center items-center z-[9999] p-4 overflow-hidden animate-fade-in cursor-pointer"
+    >
+      
+      {/* CARD CONTAINER POPUP 
+        DIUBAH: Menambahkan onClick={(e) => e.stopPropagation()} dan cursor-default.
+        Ini krusial agar ketika area card putih diklik, event kliknya tidak "bocor/tembus" ke elemen backdrop luar.
+      */}
+      <div 
+        onClick={(e) => e.stopPropagation()}
+        className="w-full max-w-4xl h-[90vh] bg-white rounded-none shadow-2xl flex flex-col overflow-hidden text-xs cursor-default"
+      >
+        
+        {/* HEADER GRADASI HORIZONTAL */}
+        <div 
+          className="px-6 py-5 md:px-8 md:py-6 relative text-white flex flex-col gap-2 shrink-0 rounded-none"
+          style={{
+            background: 'linear-gradient(90deg, #0854AB 0%, #1868CA 100%)'
+          }}
         >
-
-          <div>
-
-            <h1
-              className="
-                text-xl
-                font-semibold
-                text-slate-900
-              "
+          {/* ID Kode & Tombol Batal */}
+          <div className="flex justify-between items-center text-[11px] font-semibold tracking-wide text-white/90">
+            <span>{request.request_code || "REQ-001"}</span>
+            <button 
+              onClick={onClose}
+              className="flex items-center gap-1 hover:text-white/70 transition-all focus:outline-none"
             >
-              Detail Request
-            </h1>
-
-            <p
-              className="
-                text-sm
-                text-slate-500
-                mt-1
-              "
-            >
-              {request.letter_number}
-            </p>
-
+              <X size={14} />
+              <span>Batal</span>
+            </button>
           </div>
 
-          <button
-            onClick={() => navigate(
-                source === "dashboard"
-                  ? "/atasan/dashboard"
-                  : "/atasan/request"
-              )}
-            className="
-              flex
-              items-center
-              gap-2
-              text-sm
-              text-slate-600
-              hover:text-slate-900
-            "
-          >
-            <ArrowLeft size={16} />
-            Kembali
-          </button>
+          {/* Judul Utama */}
+          <h2 className="text-lg md:text-xl font-bold leading-tight pr-10">
+            {request.title}
+          </h2>
 
+          {/* Status Badge */}
+          <div className="flex mt-1">
+            <span className="px-3 py-0.5 text-[11px] font-semibold rounded-full bg-[#E0F2FE] text-[#006DC3]">
+              {request.status || "Diproses"}
+            </span>
+          </div>
         </div>
 
-        <div className="p-8">
-
-          {/* DETAIL CARD */}
-
-          <div
-            className="
-              bg-white
-              rounded-2xl
-              border
-              border-gray-200
-              p-6
-            "
-          >
-
-            <div className="flex justify-between items-start">
-
-              <div>
-
-                <div
-                  className="
-                    flex
-                    items-center
-                    gap-3
-                    mb-3
-                    flex-wrap
-                  "
-                >
-
-                  <span
-                    className="
-                      text-sm
-                      text-slate-400
-                    "
-                  >
-                    {request.request_code}
-                  </span>
-
-                  <span
-                    className="
-                      px-3
-                      py-1
-                      rounded-full
-                      bg-blue-50
-                      text-blue-600
-                      text-xs
-                      font-medium
-                    "
-                  >
-                    {request.status}
-                  </span>
-
-                  {request.is_priority && (
-
-                    <span
-                      className="
-                        px-3
-                        py-1
-                        rounded-full
-                        bg-yellow-100
-                        text-yellow-700
-                        text-xs
-                        font-medium
-                      "
-                    >
-                      Prioritas
-                    </span>
-
-                  )}
-
-                </div>
-
-                <h2
-                  className="
-                    text-2xl
-                    font-semibold
-                    text-slate-900
-                  "
-                >
-                  {request.title}
-                </h2>
-
-              </div>
-
-              <button
-                onClick={handlePriority}
-                className="
-                  px-4
-                  py-2.5
-                  rounded-xl
-                  border
-                  border-yellow-300
-                  bg-yellow-50
-                  text-yellow-700
-                  flex
-                  items-center
-                  gap-2
-                  text-sm
-                  font-medium
-                  hover:bg-yellow-100
-                  transition
-                "
-              >
-
-                <Star
-                  size={18}
-                  fill={
-                    request.is_priority
-                      ? "#facc15"
-                      : "none"
-                  }
-                  className="text-yellow-500"
-                />
-
-                {request.is_priority
-                  ? "Batalkan Prioritas"
-                  : "Jadikan Prioritas"}
-
-              </button>
-
-            </div>
-
-            {/* INFORMASI */}
-
-            <div
-              className="
-                grid
-                grid-cols-1
-                md:grid-cols-2
-                xl:grid-cols-3
-                gap-6
-                mt-8
-              "
-            >
-
-              <div>
-                <p className="text-xs text-slate-400 mb-1">
-                  Nomor Surat
-                </p>
-                <p className="text-sm font-medium">
-                  {request.letter_number}
-                </p>
-              </div>
-
-              <div>
-                <p className="text-xs text-slate-400 mb-1">
-                  Tanggal Masuk
-                </p>
-                <p className="text-sm font-medium">
-                  {new Date(
-                    request.entry_date
-                  ).toLocaleDateString("id-ID")}
-                </p>
-              </div>
-
-              <div>
-                <p className="text-xs text-slate-400 mb-1">
-                  Deadline
-                </p>
-                <p className="text-sm font-medium">
-                  {new Date(
-                    request.deadline
-                  ).toLocaleDateString("id-ID")}
-                </p>
-              </div>
-
-              <div>
-                <p className="text-xs text-slate-400 mb-1">
-                  Divisi Pengaju
-                </p>
-                <p className="text-sm font-medium">
-                  {request.requester_division}
-                </p>
-              </div>
-
-              <div>
-                <p className="text-xs text-slate-400 mb-1">
-                  Platform Target
-                </p>
-                <p className="text-sm font-medium">
-                  {request.platform_target}
-                </p>
-              </div>
-
-              <div>
-                <p className="text-xs text-slate-400 mb-1">
-                  PIC
-                </p>
-                <p className="text-sm font-medium">
-                  {request.pic_name || "-"}
-                </p>
-              </div>
-
-            </div>
-
-            <hr className="my-8 border-gray-200" />
-
-            {/* DESKRIPSI */}
-
+        {/* AREA PUTIH */}
+        <div className="flex-1 overflow-y-auto px-6 py-6 md:px-8 md:py-7 bg-white space-y-5">
+          
+          {/* GRID DATA INFORMASI */}
+          <div className="grid grid-cols-2 gap-x-6 gap-y-4 text-xs">
             <div>
-
-              <p
-                className="
-                  text-xs
-                  text-slate-400
-                  mb-2
-                "
-              >
-                Deskripsi Kebutuhan
-              </p>
-
-              <p  className="  text-sm  leading-7  text-slate-700  whitespace-pre-wrap  ">
-                {request.description}
-              </p>
-
+              <p className="text-[11px] font-medium text-slate-400 mb-0.5">Nomor Surat</p>
+              <p className="font-semibold text-slate-800">{request.letter_number}</p>
             </div>
-
-            {/* INFO */}
-
-            <div
-              className="  mt-8  bg-blue-50  border  border-orange-200  rounded-xl  p-4  text-sm  text-orange-700  ">
-              Anda hanya dapat memberikan komentar dan mengatur prioritas. Perubahan data request dilakukan oleh anggota Marketing Communication.
+            <div>
+              <p className="text-[11px] font-medium text-slate-400 mb-0.5">Tanggal Masuk</p>
+              <p className="font-semibold text-slate-800">
+                {new Date(request.entry_date).toLocaleDateString('en-CA')}
+              </p>
             </div>
-
+            <div>
+              <p className="text-[11px] font-medium text-slate-400 mb-0.5">Deadline</p>
+              <p className="font-semibold text-slate-800">
+                {new Date(request.deadline).toLocaleDateString('en-CA')}
+              </p>
+            </div>
+            <div>
+              <p className="text-[11px] font-medium text-slate-400 mb-0.5">Divisi Pengaju</p>
+              <p className="font-semibold text-slate-800">{request.requester_division || "Marketing Communication"}</p>
+            </div>
+            <div>
+              <p className="text-[11px] font-medium text-slate-400 mb-0.5">Platform</p>
+              <p className="font-semibold text-slate-800">{request.platform_target || "Instagram"}</p>
+            </div>
+            <div>
+              <p className="text-[11px] font-medium text-slate-400 mb-0.5">PIC</p>
+              <p className="font-semibold text-slate-800">{request.pic_name || "Chairun Nisaq"}</p>
+            </div>
           </div>
 
+          {/* BOX DESKRIPSI KEBUTUHAN */}
+          <div className="bg-[#F8FAFC] rounded-xl p-4 border border-slate-100">
+            <p className="text-[11px] font-bold text-slate-400 mb-1.5 tracking-wide">
+              Deskripsi Kebutuhan
+            </p>
+            <p className="text-xs text-slate-700 leading-relaxed whitespace-pre-wrap font-medium">
+              {request.description || "Perlu Konten untuk campaign lingkungan hidup"}
+            </p>
+          </div>
+
+          {/* SEPARATOR LINE */}
+          <div className="border-t border-slate-100 my-1"></div>
+
           {/* KOMENTAR */}
-
-          <div
-            className="
-              bg-white
-              rounded-2xl
-              border
-              border-gray-200
-              p-6
-              mt-6
-            "
-          >
-
+          <div className="space-y-3">
+            <div className="flex items-center gap-1.5 text-slate-700 font-normal text-sm">
+              <MessageCircle size={16} className="text-orange-500" />
+              <span>Komentar</span>
+            </div>
+            
             <CommentSection
               comments={comments}
               onSubmit={handleSubmitComment}
             />
-
           </div>
 
         </div>
 
       </div>
-
     </div>
   );
 }

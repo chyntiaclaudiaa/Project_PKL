@@ -1,116 +1,37 @@
-export default function ReportSummaryCards({
-  summary,
-}) {
-
-  const total =
-    Number(summary.total) || 0;
-
+export default function ReportSummaryCards({ summary }) {
   const cards = [
-    {
-      title: "Menunggu",
-      value: Number(summary.menunggu),
-      textColor: "text-orange-600",
-      borderColor: "border-orange-200",
-    },
-    {
-      title: "Diproses",
-      value: Number(summary.diproses),
-      textColor: "text-blue-600",
-      borderColor: "border-blue-200",
-    },
-    {
-      title: "Revisi",
-      value: Number(summary.revisi),
-      textColor: "text-orange-700",
-      borderColor: "border-orange-300",
-    },
-    {
-      title: "Selesai",
-      value: Number(summary.selesai),
-      textColor: "text-green-600",
-      borderColor: "border-green-200",
-    },
-    {
-      title: "Ditolak",
-      value: Number(summary.ditolak),
-      textColor: "text-red-600",
-      borderColor: "border-red-200",
-    },
-    {
-      title: "Total Request",
-      value: total,
-      textColor: "text-slate-700",
-      borderColor: "border-slate-300",
-    },
+    { title: "Total Request", value: summary.total, color: "#034EA2" },
+    { title: "Menunggu", value: summary.menunggu, color: "var(--color-menunggu)" },
+    { title: "Diproses", value: summary.diproses, color: "var(--color-diproses)" },
+    { title: "Selesai", value: summary.selesai, color: "var(--color-selesai)" },
+    { title: "Ditolak", value: summary.ditolak, color: "var(--color-ditolak)" },
+    { title: "Revisi", value: summary.revisi, color: "var(--color-revisi)" },
   ];
 
   return (
-    <div className="grid grid-cols-6 gap-4">
-
-      {cards.map((item) => {
-
-        const percent =
-          item.title === "Total Request"
-            ? 100
-            : total > 0
-            ? (
-                (item.value / total) *
-                100
-              ).toFixed(1)
-            : 0;
-
-        return (
-
+    <div className="w-full">
+      <div className="grid grid-cols-2 md:grid-cols-6 gap-3">
+        {cards.map((card) => (
           <div
-            key={item.title}
-            className={`
-              border
-              rounded-2xl
-              shadow-sm
-              p-5
-               bg-white
-               
-              ${item.borderColor}
-            `}
+            key={card.title}
+            className="rounded-2xl overflow-hidden"
+            style={{ backgroundColor: card.color }}
           >
+            <div className="ml-[4px] bg-slate-50 rounded-2xl px-4 py-3 h-full">
+              <div
+                className="text-3xl font-bold leading-none"
+                style={{ color: card.color }}
+              >
+                {card.value || 0}
+              </div>
 
-            <div
-              className={`
-                text-sm
-                font-medium
-                ${item.textColor}
-              `}
-            >
-              {item.title}
+              <div className="text-sm text-slate-500 mt-1">
+                {card.title}
+              </div>
             </div>
-
-            <div
-              className={`
-                mt-2
-                text-3xl
-                font-bold
-                ${item.textColor}
-              `}
-            >
-              {item.value}
-            </div>
-
-            <div
-              className={`
-                mt-1
-                text-sm
-                font-medium
-                ${item.textColor}
-              `}
-            >
-              {percent}%
-            </div>
-
           </div>
-
-        );
-      })}
-
+        ))}
+      </div>
     </div>
   );
 }
