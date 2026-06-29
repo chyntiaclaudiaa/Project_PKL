@@ -1,12 +1,12 @@
 import API from "../api/axios";
 
 export const getAllRequests = (params) =>
-  API.get("/requests", {
+  API.get("/atasan", {
     params,
   });
 
 export const getRequestById = (id) =>
-  API.get(`/requests/${id}`);
+  API.get(`/atasan/${id}`);
 
 export const togglePriority = (id) =>
-  API.patch(`/requests/${id}/priority`);
+  API.patch(`/atasan/${id}/priority`);
