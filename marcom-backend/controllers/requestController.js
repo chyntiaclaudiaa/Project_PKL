@@ -5,7 +5,6 @@ const {
     uploadFilesToDriveFolder,
 } = require('../services/googleDriveService');
 
-// ─── HELPERS ────────────────────────────────────────────────────────────────
 
 const toBoolean = (value) =>
     value === true || value === 'true' || value === 'on' || value === '1';
@@ -90,7 +89,6 @@ const createRequest = async (req, res) => {
 
         const finalRequest = updateCodeResult.rows[0];
 
-        // Buat folder Drive — sudah ada fallback ke service account di driveService
         let driveResult = null;
         try {
             driveResult = await createGoogleDriveFolder(
@@ -159,9 +157,6 @@ const createRequest = async (req, res) => {
     }
 };
 
-// 2. Request milik anggota yang login
-// FIX: tambah result_drive_files & comments agar frontend UploadResult bisa
-//      menampilkan badge "Sudah/Belum Dikirim" dan komentar atasan dengan benar.
 const getMyRequests = async (req, res) => {
     const userId = req.user.id;
 
@@ -220,7 +215,6 @@ const getMyRequests = async (req, res) => {
     }
 };
 
-// 3. Ringkasan dashboard anggota
 const getMyDashboardSummary = async (req, res) => {
     const userId = req.user.id;
     try {
@@ -243,7 +237,6 @@ const getMyDashboardSummary = async (req, res) => {
     }
 };
 
-// 4. Ringkasan semua request (admin/atasan)
 const getAllRequestSummary = async (req, res) => {
     try {
         const result = await db.query(
@@ -263,7 +256,6 @@ const getAllRequestSummary = async (req, res) => {
     }
 };
 
-// 5. Detail satu request
 const getRequestDetail = async (req, res) => {
     const { id } = req.params;
     try {
@@ -551,20 +543,14 @@ const addComment = async (req, res) => {
     try {
         if (!comment) return res.status(400).json({ message: 'Komentar tidak boleh kosong.' });
 
-        const existingRequest = await db.query(
-            `SELECT id FROM content_requests WHERE id = $1`,
+        const requestData = await db.query(
+            `SELECT created_by, pic_id FROM content_requests WHERE id = $1`,
             [id]
         );
-        if (existingRequest.rows.length === 0) {
+
+        if (requestData.rows.length === 0) {
             return res.status(404).json({ message: 'Request tidak ditemukan.' });
         }
-
-        const requestData = await db.query(
-            `SELECT created_by, pic_id
-            FROM content_requests
-            WHERE id = $1`,
-            [id]
-        );
 
         const request = requestData.rows[0];
 
@@ -572,39 +558,43 @@ const addComment = async (req, res) => {
             `SELECT role FROM users WHERE id = $1`,
             [userId]
         );
-
         const senderRole = userResult.rows[0].role;
 
         let receiverId = null;
 
-        if (senderRole === 'atasan') {
+        if (userId === request.created_by) {
+            receiverId = request.pic_id;
+        } else if (userId === request.pic_id) {
             receiverId = request.created_by;
         } else {
-            receiverId = request.pic_id;
+            receiverId = request.pic_id ? request.pic_id : request.created_by;
         }
 
-        const result = await db.query(
-            `INSERT INTO request_comments
-            (request_id, user_id, comment, is_read, receiver_id, sender_role)
-            VALUES ($1,$2,$3,false,$4,$5)
-            RETURNING *`,
-            [
-                id,
-                userId,
-                comment,
-                receiverId,
-                senderRole
-            ]
-        );
-
-        res.status(201).json({ message: 'Komentar berhasil ditambahkan.', comment: result.rows[0] });
+        if (receiverId && receiverId !== userId) {
+            const result = await db.query(
+                `INSERT INTO request_comments
+                (request_id, user_id, comment, is_read, receiver_id, sender_role)
+                VALUES ($1, $2, $3, false, $4, $5)
+                RETURNING *`,
+                [id, userId, comment, receiverId, senderRole]
+            );
+            return res.status(201).json({ message: 'Komentar berhasil ditambahkan.', comment: result.rows[0] });
+        } else {
+            const result = await db.query(
+                `INSERT INTO request_comments
+                (request_id, user_id, comment, is_read, receiver_id, sender_role)
+                VALUES ($1, $2, $3, false, NULL, $4)
+                RETURNING *`,
+                [id, userId, comment, senderRole]
+            );
+            return res.status(201).json({ message: 'Komentar berhasil ditambahkan tanpa notifikasi khusus.', comment: result.rows[0] });
+        }
     } catch (err) {
-        console.error(err.message);
+        console.error('Error addComment:', err.message); 
         res.status(500).json({ message: 'Gagal menambahkan komentar.' });
     }
 };
 
-// 10. Daftar PIC
 const getPicUsers = async (req, res) => {
     try {
         const result = await db.query(
@@ -619,7 +609,6 @@ const getPicUsers = async (req, res) => {
     }
 };
 
-// 11. Hapus komentar
 const deleteComment = async (req, res) => {
     const { id, commentId } = req.params;
     const userId = req.user.id;
@@ -655,29 +644,39 @@ const getNotifications = async (req, res) => {
                 rc.id,
                 rc.request_id,
                 rc.comment,
+                rc.is_read,
                 rc.created_at,
                 cr.title,
                 u.name AS sender_name
             FROM request_comments rc
-            JOIN content_requests cr
-                ON rc.request_id = cr.id
-            JOIN users u
-                ON rc.user_id = u.id
+            JOIN content_requests cr ON rc.request_id = cr.id
+            JOIN users u ON rc.user_id = u.id
             WHERE rc.receiver_id = $1
-            AND rc.is_read = false
             ORDER BY rc.created_at DESC
+            LIMIT 20
         `, [userId]);
 
         res.json(result.rows);
 
     } catch (err) {
         console.error(err);
-        res.status(500).json({
-            message: 'Gagal mengambil notifikasi.'
-        });
+        res.status(500).json({ message: 'Gagal mengambil notifikasi.' });
     }
 };
 
+const markNotificationRead = async (req, res) => {
+    const { commentId } = req.params;
+    try {
+        await db.query(
+            `UPDATE request_comments SET is_read = true WHERE id = $1`,
+            [commentId]
+        );
+        res.status(200).json({ message: 'Notifikasi ditandai sudah dibaca.' });
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).json({ message: 'Gagal menandai notifikasi.' });
+    }
+};
 
 
 module.exports = {
@@ -692,5 +691,6 @@ module.exports = {
     uploadResultFile,
     addComment,
     deleteComment,
-    getNotifications
+    getNotifications,
+    markNotificationRead 
 };
