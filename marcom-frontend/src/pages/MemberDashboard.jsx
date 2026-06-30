@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { PieChart, Pie, Cell, Legend, ResponsiveContainer } from 'recharts';
 import API from '../api/axios';
+import '../style/atasan_dashboard.css'; // Skin disamakan dengan dashboard atasan (font, warna, ukuran)
 import '../style/MemberDashboard.css';
 import RequestDetailModal from '../components/RequestDetail';
 import Sidebar from '../components/Sidebar';
@@ -139,22 +140,22 @@ function MemberDashboard() {
   };
 
   return (
-    <div className="member-layout">
+    <div className="flex h-screen bg-[#fafbfc] relative">
       <Sidebar
             user={user}
             active="dashboard"
             onLogout={handleLogout} />
 
-      <main className="member-main">
-        <header className="page-header">
-            <h1>Dashboard Saya</h1>
+      <div className="flex-1 overflow-auto">
+        <header className="bg-white px-8 py-5 flex justify-between items-center border-b border-slate-200 sticky top-0 z-10">
+            <h1 className="text-lg font-bold text-slate-800">Dashboard Saya</h1>
 
             <div className="relative">
                 <button
-                    className="notification-btn relative p-2"
+                    className="p-1.5 text-orange-500 rounded-full hover:bg-slate-100 transition-colors relative focus:outline-none"
                     onClick={() => setIsPopupOpen((prev) => !prev)}
                 >
-                    <Bell size={20} />
+                    <Bell size={22} className="text-orange-500 stroke-[2]" />
 
                     {notifications.some((n) => !n.is_read || String(n.is_read) === 'false') && (
                         <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-green-500 border-2 border-white rounded-full"></span>
@@ -171,68 +172,46 @@ function MemberDashboard() {
             </div>
         </header>
 
-        <section className="greeting-box">
-          <div className="greeting-content">
-            <h2>Selamat datang, {user?.name}!</h2>
-            <p>Pantau dan kelola request konten kamu dari sini</p>
+        <main className="p-6 space-y-6 max-w-[1400px] mx-auto">
+        <section className="welcome-gradient-bg p-6 rounded-2xl text-white relative overflow-hidden shadow-none border border-slate-300">
+          <h2 className="text-lg font-bold">Selamat datang, {user?.name}!</h2>
+          <p className="text-white/70 text-xs mt-1 font-light">Pantau dan kelola request konten kamu dari sini</p>
+        </section>
+
+        <section className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+          <div className="bg-white rounded-2xl shadow-sm p-5 border-l-[5px] rounded-l-2xl" style={{ borderLeftColor: 'var(--color-diproses)' }}>
+            <h2 className="text-3xl font-extrabold text-slate-800">{summary.total}</h2>
+            <p className="text-xs text-slate-500 font-medium mt-1.5">Total Request</p>
+          </div>
+
+          <div className="bg-white rounded-2xl shadow-sm p-5 border-l-[5px] rounded-l-2xl" style={{ borderLeftColor: 'var(--color-menunggu)' }}>
+            <h2 className="text-3xl font-extrabold" style={{ color: 'var(--color-menunggu)' }}>{summary.menunggu}</h2>
+            <p className="text-xs text-slate-500 font-medium mt-1.5">Menunggu</p>
+          </div>
+
+          <div className="bg-white rounded-2xl shadow-sm p-5 border-l-[5px] rounded-l-2xl" style={{ borderLeftColor: 'var(--color-diproses)' }}>
+            <h2 className="text-3xl font-extrabold" style={{ color: 'var(--color-diproses)' }}>{summary.diproses}</h2>
+            <p className="text-xs text-slate-500 font-medium mt-1.5">Diproses</p>
+          </div>
+
+          <div className="bg-white rounded-2xl shadow-sm p-5 border-l-[5px] rounded-l-2xl" style={{ borderLeftColor: 'var(--color-revisi)' }}>
+            <h2 className="text-3xl font-extrabold" style={{ color: 'var(--color-revisi)' }}>{summary.revisi}</h2>
+            <p className="text-xs text-slate-500 font-medium mt-1.5">Revisi</p>
+          </div>
+
+          <div className="bg-white rounded-2xl shadow-sm p-5 border-l-[5px] rounded-l-2xl" style={{ borderLeftColor: 'var(--color-selesai)' }}>
+            <h2 className="text-3xl font-extrabold" style={{ color: 'var(--color-selesai)' }}>{summary.selesai}</h2>
+            <p className="text-xs text-slate-500 font-medium mt-1.5">Selesai</p>
+          </div>
+
+          <div className="bg-white rounded-2xl shadow-sm p-5 border-l-[5px] rounded-l-2xl" style={{ borderLeftColor: 'var(--color-ditolak)' }}>
+            <h2 className="text-3xl font-extrabold" style={{ color: 'var(--color-ditolak)' }}>{summary.ditolak}</h2>
+            <p className="text-xs text-slate-500 font-medium mt-1.5">Ditolak</p>
           </div>
         </section>
 
-        <section className="summary-grid">
-          <div className="summary-card total">
-            <h2>{summary.total}</h2>
-            <p>Total Request</p>
-            <div className="progress-track">
-              <div
-                className="progress-fill"
-                style={{ width: summary.total > 0 ? '100%' : '0%' }}
-              ></div>
-            </div>
-          </div>
-
-          <div className="summary-card waiting">
-            <h2>{summary.menunggu}</h2>
-            <p>Menunggu</p>
-            <div className="progress-track">
-              <div className="progress-fill"></div>
-            </div>
-          </div>
-
-          <div className="summary-card process">
-            <h2>{summary.diproses}</h2>
-            <p>Diproses</p>
-            <div className="progress-track">
-              <div className="progress-fill"></div>
-            </div>
-          </div>
-
-          <div className="summary-card revision">
-            <h2>{summary.revisi}</h2>
-            <p>Revisi</p>
-            <div className="progress-track">
-              <div className="progress-fill"></div>
-            </div>
-          </div>
-
-          <div className="summary-card done">
-            <h2>{summary.selesai}</h2>
-            <p>Selesai</p>
-            <div className="progress-track">
-              <div className="progress-fill"></div>
-            </div>
-          </div>
-
-          <div className="summary-card rejected">
-            <h2>{summary.ditolak}</h2>
-            <p>Ditolak</p>
-            <div className="progress-track">
-              <div className="progress-fill"></div>
-            </div>
-          </div>
-        </section>
-
-        <div className="dashboard-grid">
-          <section className="bg-white custom-card-style p-5 h-[380px] flex flex-col justify-between">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          <section className="lg:col-span-5 bg-white custom-card-style p-5 h-[380px] flex flex-col justify-between">
   <div>
     <h3 className="text-sm font-bold text-slate-800">
       Distribusi Status
@@ -341,36 +320,32 @@ function MemberDashboard() {
   </div>
 </section>
 
-          <section className="request-panel">
-            <div className="panel-title">
-              <h2>Request Terbaru</h2>
+          <section className="lg:col-span-7 bg-white custom-card-style p-5 h-[380px] flex flex-col">
+            <div className="mb-3">
+              <h2 className="text-sm font-bold text-slate-800">Request Terbaru</h2>
             </div>
 
-            <div className="request-list">
+            <div className="flex-1 overflow-auto space-y-2">
               {loading ? (
-                <div className="request-row empty-row">
-                  <div>
-                    <h3>Memuat data...</h3>
-                    <p>Mohon tunggu sebentar.</p>
-                  </div>
+                <div className="p-4 text-center">
+                  <h3 className="text-sm font-semibold text-slate-700">Memuat data...</h3>
+                  <p className="text-xs text-slate-400 mt-1">Mohon tunggu sebentar.</p>
                 </div>
               ) : requests.length === 0 ? (
-                <div className="request-row empty-row">
-                  <div>
-                    <h3>Belum ada request</h3>
-                    <p>Request yang kamu input akan muncul di sini.</p>
-                  </div>
+                <div className="p-4 text-center">
+                  <h3 className="text-sm font-semibold text-slate-700">Belum ada request</h3>
+                  <p className="text-xs text-slate-400 mt-1">Request yang kamu input akan muncul di sini.</p>
                 </div>
               ) : (
                 requests.slice(0, 3).map((item) => (
                   <div
-                    className="request-row"
+                    className="flex items-center justify-between gap-3 p-3 rounded-lg border border-slate-200 hover:bg-slate-50 cursor-pointer transition-colors"
                     key={item.id}
                     onClick={() => setSelectedRequestId(item.id)}
                   >
-                    <div>
-                      <h3>{item.title}</h3>
-                      <p>
+                    <div className="min-w-0">
+                      <h3 className="text-sm font-semibold text-slate-800 truncate">{item.title}</h3>
+                      <p className="text-xs text-slate-400 truncate">
                         {item.letter_number} · Tenggat: {formatDateWithTime(item.deadline)}
                       </p>
                     </div>
@@ -384,7 +359,8 @@ function MemberDashboard() {
             </div>
           </section>
         </div>
-      </main>
+        </main>
+      </div>
 
       <button className="help-btn">?</button>
 

@@ -203,7 +203,7 @@ const InputRequest = () => {
     };
 
     return (
-        <div className="dashboard-layout">
+        <div className="dashboard-layout" style={{ display: 'flex', minHeight: '100vh' }}>
             <Sidebar
                 user={user}
                 active="request"
