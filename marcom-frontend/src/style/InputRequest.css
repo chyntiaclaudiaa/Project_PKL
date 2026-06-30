@@ -10,12 +10,10 @@
     background: #f4f6f9;
     color: #061b3a;
     font-family: 'Open Sans', Arial, sans-serif;
-    /* Sidebar 260px — halaman ini harus dibungkus layout yang punya sidebar */
     margin-left: 260px;
     width: calc(100% - 260px);
 }
 
-/* Header */
 .input-header {
     height: 64px;
     background: #ffffff;
@@ -35,13 +33,11 @@
     color: #061b3a;
 }
 
-/* Wrapper */
 .input-request-wrapper {
     max-width: 1000px;
     padding: 24px;
 }
 
-/* Cards */
 .request-form-card,
 .reminder-card {
     background: #ffffff;
@@ -54,21 +50,26 @@
 
 .request-form-card h2,
 .reminder-card h2 {
+    display: flex;
+    align-items: center;
+    gap: 10px;
     margin: 0 0 20px 0;
     font-size: 15px;
     font-weight: 800;
     color: #061b3a;
-    display: flex;
-    align-items: center;
-    gap: 10px;
 }
 
-.request-form-card h2 svg,
-.reminder-card h2 svg {
+.request-form-card h2 svg {
     flex-shrink: 0;
     width: 20px;
     height: 20px;
     color: #f05a2f;
+    stroke-width: 2.5;
+}
+
+.input-request-wrapper svg {
+    color: #f05a2f;
+    flex-shrink: 0;
     stroke-width: 2.5;
 }
 
@@ -80,7 +81,6 @@
     align-items: start;
 }
 
-/* Form Group */
 .form-group {
     display: flex;
     flex-direction: column;
@@ -96,17 +96,8 @@
     color: #061b3a;
 }
 
-.form-group label svg {
-    flex-shrink: 0;
-    width: 16px;
-    height: 16px;
-    color: #f05a2f;
-    stroke-width: 2.5;
-}
-
 .form-group label span {
     color: #f05a2f;
-    margin-left: auto;
 }
 
 .form-group input,
@@ -136,13 +127,7 @@
     line-height: 1.5;
 }
 
-.form-group input::placeholder,
-.form-group textarea::placeholder {
-    color: #9ca3af;
-}
-
 .form-group select {
-    appearance: auto;
     cursor: pointer;
 }
 
@@ -169,7 +154,6 @@
     font-weight: 500;
 }
 
-/* Reminder */
 .reminder-list {
     display: flex;
     flex-direction: column;
@@ -190,13 +174,10 @@
 .reminder-list input[type='checkbox'] {
     width: 16px;
     height: 16px;
-    margin: 0;
     accent-color: #f05a2f;
     cursor: pointer;
-    flex-shrink: 0;
 }
 
-/* Google Calendar button */
 .calendar-connected {
     height: 40px;
     background: #eafaf1;
@@ -210,36 +191,10 @@
     font-weight: 700;
     border: none;
     cursor: pointer;
-    transition: opacity 0.2s;
     width: 100%;
 }
 
-.calendar-connected:disabled {
-    cursor: default;
-    opacity: 0.85;
-}
-
-.calendar-connected div {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.calendar-connected span {
-    width: 8px;
-    height: 8px;
-    background: #18b957;
-    border-radius: 50%;
-    display: inline-block;
-    flex-shrink: 0;
-}
-
-.calendar-connected p {
-    margin: 0;
-    font-size: 12px;
-    font-weight: 600;
-    color: #009f4d;
-}
+.calendar-connected:disabled { cursor: default; opacity: 0.85; }
 
 .calendar-disconnected {
     background: #fff7ed;
@@ -247,20 +202,9 @@
     color: #c2410c;
 }
 
-.calendar-disconnected div,
-.calendar-disconnected p {
-    color: #c2410c;
-}
-
-.calendar-disconnected span {
-    background: #f97316;
-}
-
-/* Form Actions */
 .form-actions {
     display: flex;
     justify-content: flex-end;
-    gap: 12px;
 }
 
 .save-request-btn {
@@ -270,7 +214,6 @@
     font-size: 13px;
     font-weight: 700;
     cursor: pointer;
-    transition: background 0.2s;
     border: none;
     display: flex;
     align-items: center;
@@ -281,38 +224,16 @@
 }
 
 .save-request-btn svg {
-    flex-shrink: 0;
-    width: 18px;
-    height: 18px;
+    color: #ffffff !important;
 }
 
-.save-request-btn:hover {
-    background: #df4c25;
-}
-
-.save-request-btn:disabled {
-    background: #9ca3af;
-    cursor: not-allowed;
-    opacity: 0.7;
-}
+.save-request-btn:hover { background: #df4c25; }
 
 @media (max-width: 1024px) {
-    .input-request-page {
-        margin-left: 0;
-        width: 100%;
-    }
+    .input-request-page { margin-left: 0; width: 100%; }
 }
 
 @media (max-width: 768px) {
-    .input-request-wrapper {
-        padding: 16px;
-    }
-
-    .request-form-grid {
-        grid-template-columns: 1fr;
-    }
-
-    .form-group label span {
-        margin-left: 0;
-    }
+    .input-request-wrapper { padding: 16px; }
+    .request-form-grid { grid-template-columns: 1fr; }
 }
