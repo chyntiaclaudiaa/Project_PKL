@@ -24,30 +24,32 @@ export default function NotificationPopup({ notifications, onClose, onNotificati
                 <div
                   key={notif.notification_id}
                   onClick={() => onNotificationClick(notif)}
-                  className={`p-4 transition-colors duration-150 cursor-pointer text-left text-xs ${
-                    !isRead ? "bg-green-50/70 hover:bg-green-100/50" : "bg-white hover:bg-slate-50"
+                  className={`p-4 transition-colors duration-150 cursor-pointer text-left text-xs border-l-4 ${
+                  !isRead 
+                      ? "bg-green-50 hover:bg-green-100 border-green-500" 
+                      : "bg-white hover:bg-slate-50 border-transparent opacity-75" 
                   }`}
                 >
                   <div className="flex justify-between items-start gap-1">
-                    <span className={`text-xs ${
-                      !isRead ? "font-extrabold text-slate-900" : "font-semibold text-slate-500"
-                    }`}>
+                  <span className={`text-xs ${
+                      !isRead ? "font-bold text-slate-900" : "font-medium text-slate-500"
+                  }`}>
                       {notif.commenter_name}
-                    </span>
-                    <span className="text-[10px] text-slate-400 shrink-0">
+                  </span>
+                  <span className="text-[10px] text-slate-400 shrink-0">
                       {new Date(notif.created_at).toLocaleDateString("id-ID", {
-                        hour: "2-digit",
-                        minute: "2-digit",
+                      hour: "2-digit",
+                      minute: "2-digit",
                       })}
-                    </span>
+                  </span>
                   </div>
 
                   <p className={`mt-1 line-clamp-2 ${
-                    !isRead 
-                      ? "font-bold text-slate-900 not-italic" 
-                      : "font-normal text-slate-400 italic"
+                  !isRead 
+                      ? "font-semibold text-slate-800" 
+                      : "font-normal text-slate-400"
                   }`}>
-                    "{notif.comment_text}"
+                  "{notif.comment_text}"
                   </p>
                 </div>
               );

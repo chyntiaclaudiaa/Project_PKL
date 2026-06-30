@@ -219,7 +219,7 @@ const ProfilUser = ({ userData, onUpdateUser, setToast }) => {
                     
                     <form onSubmit={handleUpdateIdentity} className="space-y-4">
                         <div>
-                            <label className="text-xs font-bold text-slate-600 block mb-1">Nama Lengkap *</label>
+                            <label className="text-xs font-bold text-slate-600 block mb-1">Nama Lengkap</label>
                             <input 
                                 type="text" 
                                 required
@@ -229,14 +229,8 @@ const ProfilUser = ({ userData, onUpdateUser, setToast }) => {
                             />
                         </div>
                         <div>
-                            <label className="text-xs font-bold text-slate-600 block mb-1">Email *</label>
-                            <input 
-                                type="email" 
-                                required
-                                value={identityData.email} 
-                                onChange={(e) => setIdentityData({ ...identityData, email: e.target.value })}
-                                className="w-full bg-white px-4 py-2.5 border border-gray-200/60 rounded-xl text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500" 
-                            />
+                            <label className="text-xs font-bold text-slate-400 block mb-1">Email</label>
+                            <input type="text" disabled value={userData.email || '-'} className="w-full bg-slate-50 px-4 py-2.5 border border-gray-200/60 rounded-xl text-sm text-gray-400 cursor-not-allowed focus:outline-none" />
                         </div>
                         <div>
                             <label className="text-xs font-bold text-slate-400 block mb-1">Role</label>

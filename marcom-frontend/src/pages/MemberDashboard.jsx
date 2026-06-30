@@ -5,6 +5,7 @@ import API from '../api/axios';
 import '../style/MemberDashboard.css';
 import RequestDetailModal from '../components/RequestDetail';
 import Sidebar from '../components/Sidebar';
+import NotificationPopup from '../components/atasan/NotificationPopup';
 import { Bell } from "lucide-react";
 
 function MemberDashboard() {
@@ -23,6 +24,7 @@ function MemberDashboard() {
   const [loading, setLoading] = useState(true);
   const [selectedRequestId, setSelectedRequestId] = useState(null);
   const [notifications, setNotifications] = useState([]);
+  const [isPopupOpen, setIsPopupOpen] = useState(false);
 
   const user = JSON.parse(localStorage.getItem('user'));
 
@@ -41,11 +43,35 @@ function MemberDashboard() {
   const getNotifications = async () => {
   try {
     const res = await API.get('/requests/notifications');
-    setNotifications(res.data || []);
+    const mapped = (res.data || []).map((n) => ({
+      notification_id: n.id,
+      comment_id: n.id,
+      request_id: n.request_id,
+      commenter_name: n.sender_name,
+      comment_text: n.comment,
+      is_read: n.is_read,
+      created_at: n.created_at,
+      title: n.title,
+    }));
+    setNotifications(mapped);
   } catch (err) {
     console.error(err);
   }
 };
+
+  const handleNotificationClick = async (notif) => {
+    try {
+      const isUnread = notif.is_read === false || String(notif.is_read) === "false" || notif.is_read === 0 || notif.is_read === "0";
+      if (isUnread) {
+        await API.put(`/requests/notifications/${notif.comment_id}/read`);
+        await getNotifications();
+      }
+      setIsPopupOpen(false);
+      setSelectedRequestId(notif.request_id);
+    } catch (err) {
+      console.error('Gagal menandai notifikasi:', err);
+    }
+  };
 
   const getDashboardData = async () => {
 
@@ -123,24 +149,26 @@ function MemberDashboard() {
         <header className="page-header">
             <h1>Dashboard Saya</h1>
 
-            <button
-                className="notification-btn"
-                onClick={() => {
-                    if (notifications.length > 0) {
-                        setSelectedRequestId(
-                            notifications[0].id
-                        );
-                    }
-                }}
-            >
-                <Bell size={20} />
+            <div className="relative">
+                <button
+                    className="notification-btn relative p-2"
+                    onClick={() => setIsPopupOpen((prev) => !prev)}
+                >
+                    <Bell size={20} />
 
-                {notifications.length > 0 && (
-                    <span className="notification-badge">
-                        {notifications.length}
-                    </span>
+                    {notifications.some((n) => !n.is_read || String(n.is_read) === 'false') && (
+                        <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-green-500 border-2 border-white rounded-full"></span>
+                    )}
+                </button>
+
+                {isPopupOpen && (
+                    <NotificationPopup
+                        notifications={notifications}
+                        onClose={() => setIsPopupOpen(false)}
+                        onNotificationClick={handleNotificationClick}
+                    />
                 )}
-            </button>
+            </div>
         </header>
 
         <section className="greeting-box">
@@ -357,20 +385,6 @@ function MemberDashboard() {
           </section>
         </div>
       </main>
-
-      <div className="notification-container">
-  {notifications.slice(0, 3).map((notif) => (
-    <div className="notification-card" key={notif.id}>
-      <strong>{notif.title}</strong>
-
-      <p>Status: {notif.status}</p>
-
-      {notif.latest_comment && (
-        <small>Komentar: {notif.latest_comment}</small>
-      )}
-    </div>
-  ))}
-</div>
 
       <button className="help-btn">?</button>
 
