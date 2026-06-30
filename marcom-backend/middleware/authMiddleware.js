@@ -1,9 +1,8 @@
 const jwt = require('jsonwebtoken');
 
-// 1. Validasi apakah user sudah login & membawa token JWT valid
 const verifyToken = (req, res, next) => {
     const authHeader = req.headers['authorization'];
-    const token = authHeader && authHeader.split(' ')[1]; // Mengambil string token setelah 'Bearer'
+    const token = authHeader && authHeader.split(' ')[1]; 
 
     if (!token) {
         return res.status(401).json({ message: 'Akses ditolak, token tidak ditemukan!' });
@@ -18,7 +17,6 @@ const verifyToken = (req, res, next) => {
     }
 };
 
-// 2. Validasi apakah user memiliki role 'admin'
 const isAdmin = (req, res, next) => {
     if (req.user.role !== 'admin') {
         return res.status(403).json({ message: 'Akses khusus Admin! Anda tidak memiliki otoritas.' });
@@ -26,18 +24,15 @@ const isAdmin = (req, res, next) => {
     next();
 };
 
-// 3. Validasi khusus Anggota MarCom
 const isMarcomMember = (req, res, next) => {
     if (req.user.role !== 'marcom_member') {
         return res.status(403).json({
             message: 'Akses khusus Anggota MarCom!'
         });
     }
-
     next();
 };
 
-// 4. Validasi khusus Atasan MarCom
 const isMarcomManager = (req, res, next) => {
     if (req.user.role !== 'marcom_manager') {
         return res.status(403).json({
@@ -48,7 +43,6 @@ const isMarcomManager = (req, res, next) => {
     next();
 };
 
-// 5. Middleware fleksibel untuk beberapa role sekaligus
 const allowRoles = (...roles) => {
     return (req, res, next) => {
         if (!roles.includes(req.user.role)) {

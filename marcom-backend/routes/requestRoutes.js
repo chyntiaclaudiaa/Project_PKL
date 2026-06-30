@@ -13,7 +13,8 @@ const {
     uploadResultFile,
     addComment,
     deleteComment,
-    getNotifications
+    getNotifications,
+    markNotificationRead
 } = require('../controllers/requestController');
 
 const {
@@ -24,8 +25,6 @@ const {
 
 const upload = require('../middleware/uploadMiddleware');
 
-// 1. Membuat request konten baru
-// POST /api/requests
 router.post(
     '/',
     verifyToken,
@@ -33,8 +32,6 @@ router.post(
     createRequest
 );
 
-// 2. Mengambil ringkasan dashboard anggota
-// GET /api/requests/my/summary
 router.get(
     '/my/summary',
     verifyToken,
@@ -42,8 +39,6 @@ router.get(
     getMyDashboardSummary
 );
 
-// 3. Mengambil ringkasan semua request untuk admin / atasan
-// GET /api/requests/summary/all
 router.get(
     '/summary/all',
     verifyToken,
@@ -51,8 +46,6 @@ router.get(
     getAllRequestSummary
 );
 
-// 4. Mengambil semua request milik anggota yang sedang login
-// GET /api/requests/my
 router.get(
     '/my',
     verifyToken,
@@ -60,8 +53,6 @@ router.get(
     getMyRequests
 );
 
-// 5. Mengambil daftar PIC dari database
-// GET /api/requests/pic-users
 router.get(
     '/pic-users',
     verifyToken,
@@ -69,7 +60,6 @@ router.get(
     getPicUsers
 );
 
-// Notifikasi anggota
 router.get(
     '/notifications',
     verifyToken,
@@ -77,8 +67,13 @@ router.get(
     getNotifications
 );
 
-// 6. Mengambil detail request
-// GET /api/requests/:id
+router.put(
+    '/notifications/:commentId/read',
+    verifyToken,
+    isMarcomMember,
+    markNotificationRead
+);
+
 router.get(
     '/:id',
     verifyToken,
@@ -86,8 +81,6 @@ router.get(
     getRequestDetail
 );
 
-// 7. Edit request konten
-// PUT /api/requests/:id
 router.put(
     '/:id',
     verifyToken,
@@ -95,8 +88,6 @@ router.put(
     updateRequest
 );
 
-// 8. Mengubah status request
-// PUT /api/requests/:id/status
 router.put(
     '/:id/status',
     verifyToken,
@@ -104,10 +95,6 @@ router.put(
     updateRequestStatus
 );
 
-// 9. Upload hasil konten
-// POST /api/requests/:id/upload-result
-// upload.array('result_file', 10) -> izinkan upload sampai 10 foto/video sekaligus,
-// semua dikirim dengan field name yang sama: "result_file"
 router.post(
     '/:id/upload-result',
     verifyToken,
@@ -116,8 +103,6 @@ router.post(
     uploadResultFile
 );
 
-// 10. Menambahkan komentar pada request
-// POST /api/requests/:id/comments
 router.post(
     '/:id/comments',
     verifyToken,
@@ -125,8 +110,6 @@ router.post(
     addComment
 );
 
-// 11. Menghapus komentar pada request
-// DELETE /api/requests/:id/comments/:commentId
 router.delete(
     '/:id/comments/:commentId',
     verifyToken,
