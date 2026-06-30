@@ -5,6 +5,7 @@ import API from '../api/axios';
 import '../style/MemberDashboard.css';
 import RequestDetailModal from '../components/RequestDetail';
 import Sidebar from '../components/Sidebar';
+import { Bell } from "lucide-react";
 
 function MemberDashboard() {
   const navigate = useNavigate();
@@ -21,14 +22,33 @@ function MemberDashboard() {
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedRequestId, setSelectedRequestId] = useState(null);
+  const [notifications, setNotifications] = useState([]);
 
   const user = JSON.parse(localStorage.getItem('user'));
 
   useEffect(() => {
-    getDashboardData();
-  }, []);
+  getDashboardData();
+  getNotifications();
+
+  const interval = setInterval(() => {
+    getNotifications();
+  }, 10000);
+
+  return () => clearInterval(interval);
+}, []);
+
+
+  const getNotifications = async () => {
+  try {
+    const res = await API.get('/requests/notifications');
+    setNotifications(res.data || []);
+  } catch (err) {
+    console.error(err);
+  }
+};
 
   const getDashboardData = async () => {
+
     try {
       setLoading(true);
 
@@ -101,7 +121,26 @@ function MemberDashboard() {
 
       <main className="member-main">
         <header className="page-header">
-          <h1>Dashboard Saya</h1>
+            <h1>Dashboard Saya</h1>
+
+            <button
+                className="notification-btn"
+                onClick={() => {
+                    if (notifications.length > 0) {
+                        setSelectedRequestId(
+                            notifications[0].id
+                        );
+                    }
+                }}
+            >
+                <Bell size={20} />
+
+                {notifications.length > 0 && (
+                    <span className="notification-badge">
+                        {notifications.length}
+                    </span>
+                )}
+            </button>
         </header>
 
         <section className="greeting-box">
@@ -165,48 +204,114 @@ function MemberDashboard() {
         </section>
 
         <div className="dashboard-grid">
-          <section className="distribusi-panel">
-            <div className="panel-title">
-              <h2>Distribusi Status</h2>
-            </div>
+          <section className="bg-white custom-card-style p-5 h-[380px] flex flex-col justify-between">
+  <div>
+    <h3 className="text-sm font-bold text-slate-800">
+      Distribusi Status
+    </h3>
+  </div>
 
-            <div className="chart-container">
-              <ResponsiveContainer width="100%" height={300}>
-                <PieChart>
-                  <Pie
-                    data={[
-                      { name: 'Menunggu', value: summary.menunggu, fill: '#E3781A' },
-                      { name: 'Diproses', value: summary.diproses, fill: '#006DC3' },
-                      { name: 'Revisi', value: summary.revisi, fill: '#DDC000' },
-                      { name: 'Selesai', value: summary.selesai, fill: '#1D9E75' },
-                      { name: 'Ditolak', value: summary.ditolak, fill: '#E7000B' },
-                    ]}
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={60}
-                    outerRadius={100}
-                    paddingAngle={2}
-                    dataKey="value"
-                  >
-                    <Cell fill="#E3781A" />
-                    <Cell fill="#006DC3" />
-                    <Cell fill="#DDC000" />
-                    <Cell fill="#1D9E75" />
-                    <Cell fill="#E7000B" />
-                  </Pie>
-                  <Legend 
-                    layout="vertical" 
-                    align="right" 
-                    verticalAlign="middle"
-                  />
-                </PieChart>
-              </ResponsiveContainer>
-              <div className="chart-center-text">
-                <div className="chart-number">{summary.total}</div>
-                <div className="chart-label">Total</div>
-              </div>
-            </div>
-          </section>
+  <div className="flex items-center justify-between gap-2 h-full mt-2">
+    <div className="w-1/2 h-[220px] relative flex items-center justify-center">
+      <ResponsiveContainer width="100%" height="100%">
+        <PieChart>
+          <Pie
+            data={[
+              {
+                status: "Menunggu",
+                total: summary.menunggu,
+              },
+              {
+                status: "Diproses",
+                total: summary.diproses,
+              },
+              {
+                status: "Revisi",
+                total: summary.revisi,
+              },
+              {
+                status: "Selesai",
+                total: summary.selesai,
+              },
+              {
+                status: "Ditolak",
+                total: summary.ditolak,
+              },
+            ]}
+            dataKey="total"
+            nameKey="status"
+            innerRadius={65}
+            outerRadius={85}
+            stroke="none"
+            startAngle={90}
+            endAngle={-270}
+          >
+            <Cell fill="var(--color-menunggu)" />
+            <Cell fill="var(--color-diproses)" />
+            <Cell fill="var(--color-revisi)" />
+            <Cell fill="var(--color-selesai)" />
+            <Cell fill="var(--color-ditolak)" />
+          </Pie>
+        </PieChart>
+      </ResponsiveContainer>
+
+      <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+        <span
+          className="text-2xl font-black"
+          style={{ color: "var(--color-diproses)" }}
+        >
+          {summary.total}
+        </span>
+
+        <span className="text-[10px] text-slate-400 font-semibold tracking-wider uppercase">
+          Total
+        </span>
+      </div>
+    </div>
+
+    <div className="w-1/2 space-y-2 px-2">
+      <div className="flex items-center gap-2 text-[11px]">
+        <div
+          className="w-3 h-3 rounded-full"
+          style={{ background: "var(--color-menunggu)" }}
+        />
+        Menunggu: {summary.menunggu}
+      </div>
+
+      <div className="flex items-center gap-2 text-[11px]">
+        <div
+          className="w-3 h-3 rounded-full"
+          style={{ background: "var(--color-diproses)" }}
+        />
+        Diproses: {summary.diproses}
+      </div>
+
+      <div className="flex items-center gap-2 text-[11px]">
+        <div
+          className="w-3 h-3 rounded-full"
+          style={{ background: "var(--color-revisi)" }}
+        />
+        Revisi: {summary.revisi}
+      </div>
+
+      <div className="flex items-center gap-2 text-[11px]">
+        <div
+          className="w-3 h-3 rounded-full"
+          style={{ background: "var(--color-selesai)" }}
+        />
+        Selesai: {summary.selesai}
+      </div>
+
+      <div className="flex items-center gap-2 text-[11px]">
+        <div
+          className="w-3 h-3 rounded-full"
+          style={{ background: "var(--color-ditolak)" }}
+        />
+        Ditolak: {summary.ditolak}
+      </div>
+    </div>
+  </div>
+</section>
 
           <section className="request-panel">
             <div className="panel-title">
@@ -252,6 +357,20 @@ function MemberDashboard() {
           </section>
         </div>
       </main>
+
+      <div className="notification-container">
+  {notifications.slice(0, 3).map((notif) => (
+    <div className="notification-card" key={notif.id}>
+      <strong>{notif.title}</strong>
+
+      <p>Status: {notif.status}</p>
+
+      {notif.latest_comment && (
+        <small>Komentar: {notif.latest_comment}</small>
+      )}
+    </div>
+  ))}
+</div>
 
       <button className="help-btn">?</button>
 

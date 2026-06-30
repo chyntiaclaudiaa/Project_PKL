@@ -3,18 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import API from '../api/axios';
 import Sidebar from '../components/Sidebar';
 import ConfirmModal from '../components/ConfirmModal';
-import {
-    FileText,
-    User,
-    Calendar,
-    Monitor,
-    Clock,
-    PenSquare,
-    Building2,
-    FileEdit,
-    Bell,
-    Save
-} from 'lucide-react';
+import { Bell, Save, FileText } from 'lucide-react';
 import '../style/InputRequest.css';
 
 const DIVISION_OPTIONS = [
@@ -254,7 +243,6 @@ const InputRequest = () => {
 
                                 <div className="form-group">
                                     <label>
-                                        <FileEdit size={16} />
                                         Nomor Surat <span>*</span>
                                     </label>
 
@@ -278,7 +266,6 @@ const InputRequest = () => {
 
                                 <div className="form-group">
                                     <label>
-                                        <User size={16} />
                                         PIC yang Menangani
                                     </label>
 
@@ -304,7 +291,6 @@ const InputRequest = () => {
 
                                 <div className="form-group">
                                     <label>
-                                        <Calendar size={16} />
                                         Tanggal Masuk <span>*</span>
                                     </label>
 
@@ -327,7 +313,6 @@ const InputRequest = () => {
 
                                 <div className="form-group">
                                     <label>
-                                        <Monitor size={16} />
                                         Platform Target
                                     </label>
 
@@ -356,7 +341,6 @@ const InputRequest = () => {
 
                                 <div className="form-group">
                                     <label>
-                                        <Clock size={16} />
                                         Tenggat<span>*</span>
                                     </label>
 
@@ -379,7 +363,6 @@ const InputRequest = () => {
 
                                 <div className="form-group">
                                     <label>
-                                        <PenSquare size={16} />
                                         Judul Konten <span>*</span>
                                     </label>
 
@@ -403,7 +386,6 @@ const InputRequest = () => {
 
                                 <div className="form-group">
                                     <label>
-                                        <Building2 size={16} />
                                         Divisi Pengaju <span>*</span>
                                     </label>
 
@@ -440,7 +422,6 @@ const InputRequest = () => {
 
                                 <div className="form-group">
                                     <label>
-                                        <FileText size={16} />
                                         Deskripsi Kebutuhan <span>*</span>
                                     </label>
 

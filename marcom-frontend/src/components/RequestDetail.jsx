@@ -12,6 +12,7 @@ import {
     Trash2
 } from 'lucide-react';
 
+
 const RequestDetailModal = ({ requestId, onClose, onUpdated, currentUserName }) => {
     const [detail, setDetail] = useState(null);
     const [loading, setLoading] = useState(true);
