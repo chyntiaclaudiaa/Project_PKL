@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
+import { Pencil } from 'lucide-react';
 import API from '../api/axios';
 import '../style/EditRequestModal.css';
 
@@ -16,12 +17,121 @@ const DIVISION_OPTIONS = [
     'Unit Kantor Eksternal/lain-lain',
 ];
 
+const PLATFORM_OPTIONS = ['Instagram', 'Website', 'YouTube', 'TikTok'];
+
+/* Dropdown custom bergaya sama seperti di UserModal:
+   klik untuk buka, chevron berputar, opsi aktif ditandai,
+   dan boleh punya kotak pencarian untuk list yang panjang. */
+const EditDropdown = ({
+    label,
+    required,
+    placeholder,
+    value,
+    options,
+    onSelect,
+    error,
+    searchable,
+    search,
+    onSearchChange,
+}) => {
+    const [open, setOpen] = useState(false);
+    const ref = useRef(null);
+
+    useEffect(() => {
+        const handleClickOutside = (e) => {
+            if (ref.current && !ref.current.contains(e.target)) {
+                setOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
+
+    const filteredOptions = searchable
+        ? options.filter((opt) => opt.label.toLowerCase().includes((search || '').toLowerCase()))
+        : options;
+
+    const selectedLabel = options.find((opt) => String(opt.value) === String(value))?.label;
+
+    return (
+        <div className="edit-field edit-dropdown-wrapper" ref={ref}>
+            <label>{label} {required && <span>*</span>}</label>
+
+            <div
+                className={`edit-dropdown-trigger ${error ? 'err' : ''}`}
+                onClick={() => setOpen((prev) => !prev)}
+            >
+                <span className={selectedLabel ? 'edit-dropdown-value' : 'edit-dropdown-placeholder'}>
+                    {selectedLabel || placeholder}
+                </span>
+                <svg
+                    className={`edit-dropdown-chevron ${open ? 'open' : ''}`}
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    strokeWidth={2}
+                    stroke="currentColor"
+                >
+                    <path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+                </svg>
+            </div>
+
+            {open && (
+                <div className="edit-dropdown-menu">
+                    {searchable && (
+                        <div className="edit-dropdown-search" onClick={(e) => e.stopPropagation()}>
+                            <input
+                                type="text"
+                                autoFocus
+                                value={search}
+                                onChange={(e) => onSearchChange(e.target.value)}
+                                placeholder="Cari..."
+                            />
+                        </div>
+                    )}
+
+                    <ul className="edit-dropdown-options">
+                        {filteredOptions.length === 0 ? (
+                            <li className="edit-dropdown-empty">Tidak ditemukan</li>
+                        ) : (
+                            filteredOptions.map((opt) => (
+                                <li
+                                    key={opt.value}
+                                    className={String(opt.value) === String(value) ? 'active' : ''}
+                                    onClick={() => {
+                                        onSelect(opt.value);
+                                        setOpen(false);
+                                    }}
+                                >
+                                    {opt.label}
+                                </li>
+                            ))
+                        )}
+                    </ul>
+                </div>
+            )}
+
+            {error && <small>{error}</small>}
+        </div>
+    );
+};
+
 const EditRequestModal = ({ requestId, onClose, onUpdated }) => {
     const [form, setForm] = useState(null);
     const [picOptions, setPicOptions] = useState([]);
     const [errors, setErrors] = useState({});
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
+    const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
+
+    const [divisiSearch, setDivisiSearch] = useState('');
+    const [picSearch, setPicSearch] = useState('');
+    const [platformSearch, setPlatformSearch] = useState('');
+
+    const showToast = (message, type = 'success') => {
+        setToast({ show: true, message, type });
+        setTimeout(() => setToast({ show: false, message: '', type: 'success' }), 3000);
+    };
 
     useEffect(() => {
         if (requestId) {
@@ -51,7 +161,7 @@ const EditRequestModal = ({ requestId, onClose, onUpdated }) => {
                 reminder_deadline_day: r.reminder_deadline_day || false,
             });
         } catch (err) {
-            alert(err.response?.data?.message || 'Gagal memuat data request.');
+            showToast(err.response?.data?.message || 'Gagal memuat data request.', 'error');
             onClose();
         } finally {
             setLoading(false);
@@ -81,12 +191,19 @@ const EditRequestModal = ({ requestId, onClose, onUpdated }) => {
         setErrors(prev => ({ ...prev, [name]: '' }));
     };
 
+    const handleDropdownSelect = (name, value) => {
+        setForm(prev => ({ ...prev, [name]: value }));
+        setErrors(prev => ({ ...prev, [name]: '' }));
+    };
+
     const validate = () => {
         const e = {};
         if (!form.letter_number.trim()) e.letter_number = 'Nomor surat wajib diisi.';
         if (!form.entry_date) e.entry_date = 'Tanggal masuk wajib diisi.';
         if (!form.deadline) e.deadline = 'Tenggat wajib diisi.';
         if (!form.requester_division) e.requester_division = 'Divisi pengaju wajib dipilih.';
+        if (!form.pic_id) e.pic_id = 'PIC wajib dipilih.';
+        if (!form.platform_target) e.platform_target = 'Platform target wajib dipilih.';
         if (!form.title.trim()) e.title = 'Judul konten wajib diisi.';
         if (!form.description.trim()) e.description = 'Deskripsi wajib diisi.';
         setErrors(e);
@@ -98,10 +215,11 @@ const EditRequestModal = ({ requestId, onClose, onUpdated }) => {
         try {
             setSaving(true);
             await API.put(`/requests/${requestId}`, form);
+            showToast('Perubahan berhasil disimpan.', 'success');
             if (onUpdated) onUpdated();
-            onClose();
+            setTimeout(() => onClose(), 800);
         } catch (err) {
-            alert(err.response?.data?.message || 'Gagal menyimpan perubahan.');
+            showToast(err.response?.data?.message || 'Gagal menyimpan perubahan.', 'error');
         } finally {
             setSaving(false);
         }
@@ -113,17 +231,28 @@ const EditRequestModal = ({ requestId, onClose, onUpdated }) => {
 
     if (!requestId) return null;
 
+    const picDropdownOptions = picOptions.map((p) => ({ value: p.id, label: p.name }));
+    const divisionDropdownOptions = DIVISION_OPTIONS.map((d) => ({ value: d, label: d }));
+    const platformDropdownOptions = PLATFORM_OPTIONS.map((p) => ({ value: p, label: p }));
+
     return (
         <div className="edit-modal-overlay" onClick={handleBackdropClick}>
+            {toast.show && (
+                <div className={`edit-toast ${toast.type === 'error' ? 'edit-toast-error' : 'edit-toast-success'}`}>
+                    {toast.message}
+                </div>
+            )}
+
             <div className="edit-modal">
 
                 {/* Header */}
                 <div className="edit-modal-header">
                     <div className="edit-header-left">
-                        <span className="edit-modal-label">Edit Request</span>
-                        <h2>{form?.title || '...'}</h2>
+                        <span className="edit-modal-label">
+                            <Pencil size={15} />
+                            Edit Request
+                        </span>
                     </div>
-                    <button className="edit-modal-close" onClick={onClose}>✕ Batal</button>
                 </div>
 
                 {loading || !form ? (
@@ -173,54 +302,48 @@ const EditRequestModal = ({ requestId, onClose, onUpdated }) => {
                                         {errors.deadline && <small>{errors.deadline}</small>}
                                     </div>
 
-                                    <div className="edit-field">
-                                        <label>Divisi Pengaju <span>*</span></label>
-                                        <select
-                                            name="requester_division"
-                                            value={form.requester_division}
-                                            onChange={handleChange}
-                                            className={errors.requester_division ? 'err' : ''}
-                                        >
-                                            <option value="">-- Pilih Divisi --</option>
-                                            {DIVISION_OPTIONS.map(d => (
-                                                <option key={d} value={d}>{d}</option>
-                                            ))}
-                                        </select>
-                                        {errors.requester_division && <small>{errors.requester_division}</small>}
-                                    </div>
+                                    <EditDropdown
+                                        label="Divisi Pengaju"
+                                        required
+                                        placeholder="-- Pilih Divisi --"
+                                        value={form.requester_division}
+                                        options={divisionDropdownOptions}
+                                        onSelect={(value) => handleDropdownSelect('requester_division', value)}
+                                        error={errors.requester_division}
+                                        searchable
+                                        search={divisiSearch}
+                                        onSearchChange={setDivisiSearch}
+                                    />
                                 </div>
 
                                 {/* KOLOM KANAN */}
                                 <div className="edit-col">
 
-                                    <div className="edit-field">
-                                        <label>PIC yang Menangani</label>
-                                        <select
-                                            name="pic_id"
-                                            value={form.pic_id}
-                                            onChange={handleChange}
-                                        >
-                                            <option value="">-- Pilih PIC --</option>
-                                            {picOptions.map(p => (
-                                                <option key={p.id} value={p.id}>{p.name}</option>
-                                            ))}
-                                        </select>
-                                    </div>
+                                    <EditDropdown
+                                        label="PIC yang Menangani"
+                                        required
+                                        placeholder="-- Pilih PIC --"
+                                        value={form.pic_id}
+                                        options={picDropdownOptions}
+                                        onSelect={(value) => handleDropdownSelect('pic_id', value)}
+                                        error={errors.pic_id}
+                                        searchable
+                                        search={picSearch}
+                                        onSearchChange={setPicSearch}
+                                    />
 
-                                    <div className="edit-field">
-                                        <label>Platform Target</label>
-                                        <select
-                                            name="platform_target"
-                                            value={form.platform_target}
-                                            onChange={handleChange}
-                                        >
-                                            <option value="">-- Pilih Platform --</option>
-                                            <option value="Instagram">Instagram</option>
-                                            <option value="Website">Website</option>
-                                            <option value="YouTube">YouTube</option>
-                                            <option value="TikTok">TikTok</option>
-                                        </select>
-                                    </div>
+                                    <EditDropdown
+                                        label="Platform Target"
+                                        required
+                                        placeholder="-- Pilih Platform --"
+                                        value={form.platform_target}
+                                        options={platformDropdownOptions}
+                                        onSelect={(value) => handleDropdownSelect('platform_target', value)}
+                                        error={errors.platform_target}
+                                        searchable
+                                        search={platformSearch}
+                                        onSearchChange={setPlatformSearch}
+                                    />
 
                                     <div className="edit-field">
                                         <label>Judul Konten <span>*</span></label>

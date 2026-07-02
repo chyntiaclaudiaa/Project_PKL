@@ -278,11 +278,11 @@ const getRequestDetail = async (req, res) => {
         }
 
         const commentsResult = await db.query(
-            `SELECT rc.id, rc.comment, rc.created_at, u.name AS user_name, u.role AS user_role
-             FROM request_comments rc
-             JOIN users u ON rc.user_id = u.id
-             WHERE rc.request_id = $1
-             ORDER BY rc.created_at ASC`,
+            `SELECT rc.id, rc.comment, rc.created_at, rc.user_id, u.name AS user_name, u.role AS user_role
+            FROM request_comments rc
+            JOIN users u ON rc.user_id = u.id
+            WHERE rc.request_id = $1
+            ORDER BY rc.created_at ASC`,
             [id]
         );
 

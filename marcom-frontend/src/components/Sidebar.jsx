@@ -35,12 +35,13 @@ function Sidebar({ user, active, onLogout }) {
           </div>
         </div>
 
-        {/* ROLE INFO */}
         <div className="mx-4 mt-4 px-4 py-2.5 bg-white/10 rounded-lg border border-white/5">
           <p className="text-[10px] uppercase tracking-wider text-white/40 font-semibold">Role Aktif</p>
           <div className="flex items-center gap-2 mt-0.5">
             <User size={14} strokeWidth={2} className="text-gray-200" />
-            <span className="text-xs font-bold text-white">{user?.role || 'Anggota'}</span>
+            <span className="text-xs font-bold text-white capitalize">
+              {user?.role?.replace('_', ' ') || 'Anggota'}
+            </span>
           </div>
         </div>
 
@@ -82,8 +83,8 @@ function Sidebar({ user, active, onLogout }) {
               {user?.name?.charAt(0)?.toUpperCase() || "U"}
             </div>
             <div className="min-w-0">
-              <p className="font-bold text-xs text-white truncate" title={user?.name}>{user?.name || "User"}</p>
-              <p className="text-white/50 text-[10px] truncate">{user?.role?.replace('_', ' ') || "Anggota"}</p>
+              <p className="font-bold text-xs text-white truncate capitalize" title={user?.name}>{user?.name || "User"}</p>
+              <p className="text-white/50 text-[10px] truncate capitalize">{user?.role?.replace('_', ' ') || "Anggota"}</p>
             </div>
           </div>
           

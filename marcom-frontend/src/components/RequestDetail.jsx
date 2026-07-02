@@ -9,21 +9,30 @@ import {
     MoreVertical,
     ChevronDown,
     X,
-    Trash2
+    Trash2,
+    AlertCircle
 } from 'lucide-react';
 
 
-const RequestDetailModal = ({ requestId, onClose, onUpdated, currentUserName }) => {
+const RequestDetailModal = ({ requestId, onClose, onUpdated, currentUserName, currentUserId }) => {
     const [detail, setDetail] = useState(null);
     const [loading, setLoading] = useState(true);
     const [comment, setComment] = useState('');
     const [openMenuId, setOpenMenuId] = useState(null);
     const [statusDropdown, setStatusDropdown] = useState(false);
     const [statusLoading, setStatusLoading] = useState(false);
-    const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
     const [confirmModal, setConfirmModal] = useState({ show: false, commentId: null });
+    const [errorMessage, setErrorMessage] = useState('');
 
-    const userName = currentUserName || localStorage.getItem('userName') || 'Current User';
+    const storedUser = (() => {
+        try {
+            return JSON.parse(localStorage.getItem('user') || 'null');
+        } catch {
+            return null;
+        }
+    })();
+    const userId = currentUserId || storedUser?.id;
+    const userName = currentUserName || storedUser?.name || 'Current User';
 
     useEffect(() => {
         if (requestId) {
@@ -31,7 +40,7 @@ const RequestDetailModal = ({ requestId, onClose, onUpdated, currentUserName }) 
         }
     }, [requestId]);
 
-    // Tutup pop up kalau klik di dari cardnya
+    // Tutup pop up kalau klik di luar cardnya
     useEffect(() => {
         const handleClickOutside = () => {
             setOpenMenuId(null);
@@ -41,8 +50,13 @@ const RequestDetailModal = ({ requestId, onClose, onUpdated, currentUserName }) 
         return () => document.removeEventListener('click', handleClickOutside);
     }, []);
 
-    // Get request detail from API
-    // silent=true → refetch without loading overlay (used after sending comment)
+    // Auto-hide error toast setelah beberapa detik
+    useEffect(() => {
+        if (!errorMessage) return;
+        const timer = setTimeout(() => setErrorMessage(''), 4000);
+        return () => clearTimeout(timer);
+    }, [errorMessage]);
+
     const getRequestDetail = async (silent = false) => {
         try {
             if (!silent) setLoading(true);
@@ -50,7 +64,7 @@ const RequestDetailModal = ({ requestId, onClose, onUpdated, currentUserName }) 
             // Backend mengembalikan { request, comments, status_history }
             setDetail(response.data);
         } catch (err) {
-            alert(err.response?.data?.message || 'Gagal mengambil detail request.');
+            setErrorMessage(err.response?.data?.message || 'Gagal mengambil detail request.');
         } finally {
             if (!silent) setLoading(false);
         }
@@ -59,7 +73,7 @@ const RequestDetailModal = ({ requestId, onClose, onUpdated, currentUserName }) 
     // Send new comment
     const handleSendComment = async () => {
         if (!comment.trim()) {
-            alert('Komentar tidak boleh kosong.');
+            setErrorMessage('Komentar tidak boleh kosong.');
             return;
         }
 
@@ -71,7 +85,7 @@ const RequestDetailModal = ({ requestId, onClose, onUpdated, currentUserName }) 
             await getRequestDetail(true);
             if (onUpdated) onUpdated();
         } catch (err) {
-            alert(err.response?.data?.message || 'Gagal mengirim komentar.');
+            setErrorMessage(err.response?.data?.message || 'Gagal mengirim komentar.');
         }
     };
 
@@ -93,16 +107,28 @@ const RequestDetailModal = ({ requestId, onClose, onUpdated, currentUserName }) 
             }));
 
             setOpenMenuId(null);
-            showToast('Komentar berhasil dihapus', 'success');
             if (onUpdated) onUpdated();
         } catch (err) {
-            showToast(err.response?.data?.message || 'Gagal menghapus komentar.', 'error');
+            setErrorMessage(err.response?.data?.message || 'Gagal menghapus komentar.');
             console.error('Delete error:', err);
         }
     };
 
+    // Request ini cuma boleh diubah statusnya oleh user yang sedang jadi PIC-nya.
+    // Kalau kamu assign surat (bahkan surat buatan kamu sendiri) ke orang lain,
+    // pic_id pindah ke orang itu dan kamu otomatis kehilangan akses ubah status.
+    const isAssignedPic = !!detail && String(detail.request.pic_id) === String(userId);
+
     // Change request status
     const handleStatusChange = async (newStatus) => {
+        // Lapis pengaman kedua di level fungsi, bukan cuma disembunyikan di UI —
+        // supaya tetap aman walau dropdown-nya somehow ke-trigger.
+        if (!isAssignedPic) {
+            setErrorMessage('Anda bukan PIC yang ditugaskan pada request ini.');
+            setStatusDropdown(false);
+            return;
+        }
+
         if (newStatus === detail.request.status) {
             setStatusDropdown(false);
             return;
@@ -127,20 +153,13 @@ const RequestDetailModal = ({ requestId, onClose, onUpdated, currentUserName }) 
             setStatusDropdown(false);
             if (onUpdated) onUpdated();
         } catch (err) {
-            alert(err.response?.data?.message || 'Gagal mengubah status.');
+            setErrorMessage(err.response?.data?.message || 'Gagal mengubah status.');
         } finally {
             setStatusLoading(false);
         }
     };
 
     // Helper functions
-    const showToast = (message, type = 'success') => {
-        setToast({ show: true, message, type });
-    };
-
-    const hideToast = () => {
-        setToast({ show: false, message: '', type: 'success' });
-    };
 
     const getInitials = (name) => {
         if (!name) return 'U';
@@ -176,20 +195,25 @@ const RequestDetailModal = ({ requestId, onClose, onUpdated, currentUserName }) 
 
     return (
         <div className="modal-overlay" onClick={handleBackdropClick}>
-            {/* Toast Notification Component */}
-            {toast.show && (
-                <Toast
-                    message={toast.message}
-                    type={toast.type}
-                    onClose={hideToast}
-                />
+            {/* Error Toast (melayang, tidak menumpuk di dalam card) */}
+            {errorMessage && (
+                <div className="error-toast">
+                    <AlertCircle size={16} />
+                    <span>{errorMessage}</span>
+                    <button
+                        className="error-toast-close"
+                        onClick={() => setErrorMessage('')}
+                    >
+                        <X size={14} />
+                    </button>
+                </div>
             )}
 
             {/* Confirm Delete Modal */}
             {confirmModal.show && (
                 <ConfirmModal
                     title="Hapus Komentar"
-                    message="Apakah Anda yakin ingin menghapus komentar ini? Tindakan ini tidak dapat dibatalkan."
+                    message="Apakah Anda yakin ingin menghapus komentar ini?"
                     confirmText="Hapus"
                     cancelText="Batal"
                     type="error"
@@ -220,36 +244,44 @@ const RequestDetailModal = ({ requestId, onClose, onUpdated, currentUserName }) 
                                     {detail.request.status}
                                 </span>
 
-                                <div
-                                    className="status-dropdown-wrapper"
-                                    onClick={e => e.stopPropagation()} // cegah trigger handleClickOutside
-                                >
-                                    <span className="ubah-status-label">Ubah Status</span>
-                                    <div className="status-dropdown-container">
-                                        <button
-                                            className="status-dropdown-btn"
-                                            onClick={() => setStatusDropdown(prev => !prev)}
-                                            disabled={statusLoading}
-                                        >
-                                            {statusLoading ? 'Menyimpan...' : detail.request.status}
-                                            <ChevronDown size={16} className="dropdown-icon" />
-                                        </button>
+                                {isAssignedPic ? (
+                                    <div
+                                        className="status-dropdown-wrapper"
+                                        onClick={e => e.stopPropagation()} // cegah trigger handleClickOutside
+                                    >
+                                        <span className="ubah-status-label">Ubah Status</span>
+                                        <div className="status-dropdown-container">
+                                            <button
+                                                className="status-dropdown-btn"
+                                                onClick={() => setStatusDropdown(prev => !prev)}
+                                                disabled={statusLoading}
+                                            >
+                                                {statusLoading ? 'Menyimpan...' : detail.request.status}
+                                                <ChevronDown size={16} className="dropdown-icon" />
+                                            </button>
 
-                                        {statusDropdown && (
-                                            <div className="dropdown-menu">
-                                                {STATUS_OPTIONS.map(s => (
-                                                    <button
-                                                        key={s}
-                                                        onClick={() => handleStatusChange(s)}
-                                                        className={detail.request.status === s ? 'active' : ''}
-                                                    >
-                                                        {s}
-                                                    </button>
-                                                ))}
-                                            </div>
-                                        )}
+                                            {statusDropdown && (
+                                                <div className="dropdown-menu">
+                                                    {STATUS_OPTIONS.map(s => (
+                                                        <button
+                                                            key={s}
+                                                            onClick={() => handleStatusChange(s)}
+                                                            className={detail.request.status === s ? 'active' : ''}
+                                                        >
+                                                            {s}
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                            )}
+                                        </div>
                                     </div>
-                                </div>
+                                ) : (
+                                    // Bukan PIC yang ditugaskan pada request ini — status jadi read-only,
+                                    // gak ada dropdown/tombol ubah sama sekali.
+                                    <span className="status-readonly-note">
+                                        Hanya PIC ({detail.request.pic_name || '-'}) yang bisa mengubah status ini.
+                                    </span>
+                                )}
                             </div>
                         </div>
 
@@ -317,31 +349,34 @@ const RequestDetailModal = ({ requestId, onClose, onUpdated, currentUserName }) 
                                                     <p className="comment-text">{item.comment}</p>
                                                 </div>
 
-                                                <div
-                                                    className="comment-actions"
-                                                    onClick={e => e.stopPropagation()}
-                                                >
-                                                    <button
-                                                        className="comment-menu"
-                                                        onClick={() =>
-                                                            setOpenMenuId(openMenuId === item.id ? null : item.id)
-                                                        }
+                                                {/* Hanya tampilkan menu hapus kalau komentar milik user yang sedang login (id berupa UUID string) */}
+                                                {String(item.user_id) === String(userId) && (
+                                                    <div
+                                                        className="comment-actions"
+                                                        onClick={(e) => e.stopPropagation()}
                                                     >
-                                                        <MoreVertical size={18} />
-                                                    </button>
+                                                        <button
+                                                            className="comment-menu"
+                                                            onClick={() =>
+                                                                setOpenMenuId(openMenuId === item.id ? null : item.id)
+                                                            }
+                                                        >
+                                                            <MoreVertical size={18} />
+                                                        </button>
 
-                                                    {openMenuId === item.id && (
-                                                        <div className="comment-dropdown">
-                                                            <button
-                                                                onClick={() => handleDeleteComment(item.id)}
-                                                                className="delete-btn"
-                                                            >
-                                                                <Trash2 size={14} className="delete-icon" />
-                                                                Hapus
-                                                            </button>
-                                                        </div>
-                                                    )}
-                                                </div>
+                                                        {openMenuId === item.id && (
+                                                            <div className="comment-dropdown">
+                                                                <button
+                                                                    onClick={() => handleDeleteComment(item.id)}
+                                                                    className="delete-btn"
+                                                                >
+                                                                    <Trash2 size={14} className="delete-icon" />
+                                                                    Hapus
+                                                                </button>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                )}
                                             </div>
                                         ))
                                     )}

@@ -6,7 +6,7 @@ import logoBankSumut from '../assets/logo_banksumut.png';
 const Login = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const [rememberMe, setRememberMe] = useState(false); // State untuk checkbox Ingat Saya
+    const [rememberMe, setRememberMe] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
@@ -105,7 +105,7 @@ const Login = () => {
                         
                         <p className="text-sm text-gray-300 leading-relaxed max-w-md mb-8">
                             Platform terpusat untuk manajemen request konten tim Marketing Communication. 
-                            Pantai progres, kelola deadline, dan koordinasi tim dalam satu sistem.
+                            Pantau progres, kelola deadline, dan koordinasi tim dalam satu sistem.
                         </p>
 
                         {/* Fitur List Buttons */}
@@ -181,7 +181,7 @@ const Login = () => {
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
                                     placeholder="••••••••" 
-                                    className="w-full pl-12 pr-12 py-3 bg-[#ebf2fa] text-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 border-none transition-all placeholder-gray-400"
+                                    className="w-full pl-12 pr-12 py-3 bg-[#ebf2fa] text-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 border-none transition-all placeholder-gray-400 [&::-ms-reveal]:hidden [&::-webkit-contacts-auto-fill-button]:hidden"
                                     required
                                 />
                                 <button

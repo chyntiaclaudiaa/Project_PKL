@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;500;600;700;800&display=swap');
+
 .edit-modal-overlay {
     position: fixed;
     inset: 0;
@@ -7,6 +9,7 @@
     justify-content: center;
     z-index: 1000;
     padding: 24px;
+    font-family: 'Open Sans', Arial, sans-serif;
 }
 
 .edit-modal {
@@ -27,7 +30,7 @@
     align-items: flex-start;
     justify-content: space-between;
     padding: 20px 28px 18px;
-    background: #f05a2f;
+    background: linear-gradient(90deg, #e95723 0%, #ff8a65 100%);
     flex-shrink: 0;
 }
 
@@ -38,35 +41,12 @@
 }
 
 .edit-modal-label {
-    font-size: 11px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
     font-weight: 700;
-    color: rgba(255,255,255,0.75);
-    text-transform: uppercase;
-    letter-spacing: 0.8px;
-}
-
-.edit-modal-header h2 {
-    margin: 0;
-    font-size: 18px;
-    font-weight: 800;
     color: #ffffff;
-}
-
-.edit-modal-close {
-    background: rgba(255,255,255,0.15);
-    border: none;
-    color: #ffffff;
-    font-size: 13px;
-    font-weight: 700;
-    padding: 6px 14px;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: background 0.2s;
-    flex-shrink: 0;
-}
-
-.edit-modal-close:hover {
-    background: rgba(255,255,255,0.25);
 }
 
 /* Loading */
@@ -101,6 +81,7 @@
     display: flex;
     flex-direction: column;
     gap: 6px;
+    position: relative;
 }
 
 .edit-field label {
@@ -115,7 +96,6 @@
 }
 
 .edit-field input,
-.edit-field select,
 .edit-field textarea {
     width: 100%;
     padding: 9px 12px;
@@ -130,14 +110,12 @@
 }
 
 .edit-field input:focus,
-.edit-field select:focus,
 .edit-field textarea:focus {
     border-color: #f05a2f;
     background: #ffffff;
 }
 
 .edit-field input.err,
-.edit-field select.err,
 .edit-field textarea.err {
     border-color: #e7000b;
     background: #fff8f8;
@@ -152,6 +130,12 @@
     color: #e7000b;
     font-size: 11px;
     font-weight: 600;
+}
+
+/* Icon kalender oranye */
+.edit-field input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+    filter: invert(48%) sepia(79%) saturate(2476%) hue-rotate(360deg) brightness(101%) contrast(101%);
+    cursor: pointer;
 }
 
 /* Footer */
@@ -203,6 +187,151 @@
 .btn-save:disabled {
     opacity: 0.6;
     cursor: not-allowed;
+}
+
+/* ===================================================
+   Custom Dropdown (Divisi Pengaju, PIC, Platform Target)
+   Warna disamakan dengan field lain: border #e3e8f0,
+   fokus/aktif #f05a2f, label #526078, error #e7000b
+   =================================================== */
+
+.edit-dropdown-wrapper {
+    position: relative;
+}
+
+.edit-dropdown-trigger {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 9px 12px;
+    border: 1px solid #e3e8f0;
+    border-radius: 8px;
+    background: #f8fafc;
+    font-size: 13px;
+    cursor: pointer;
+    transition: border-color 0.2s, background 0.2s;
+}
+
+.edit-dropdown-trigger:hover {
+    border-color: #f6b39f;
+}
+
+.edit-dropdown-trigger.err {
+    border-color: #e7000b;
+    background: #fff8f8;
+}
+
+.edit-dropdown-value {
+    color: #1e2939;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.edit-dropdown-placeholder {
+    color: #9aa4b8;
+}
+
+.edit-dropdown-chevron {
+    width: 16px;
+    height: 16px;
+    color: #f05a2f;
+    flex-shrink: 0;
+    transition: transform 0.2s ease;
+}
+
+.edit-dropdown-chevron.open {
+    transform: rotate(180deg);
+}
+
+.edit-dropdown-menu {
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    right: 0;
+    background: #ffffff;
+    border: 1px solid #e3e8f0;
+    border-radius: 10px;
+    box-shadow: 0 12px 30px rgba(10, 20, 60, 0.14);
+    z-index: 50;
+    overflow: hidden;
+}
+
+.edit-dropdown-search {
+    padding: 8px 10px;
+    border-bottom: 1px solid #eef1f6;
+    background: #f8fafc;
+}
+
+.edit-dropdown-search input {
+    width: 100%;
+    border: none;
+    outline: none;
+    background: transparent;
+    font-size: 12.5px;
+    color: #1e2939;
+    font-family: inherit;
+}
+
+.edit-dropdown-search input::placeholder {
+    color: #b0b8c9;
+}
+
+.edit-dropdown-options {
+    max-height: 210px;
+    overflow-y: auto;
+    padding: 6px;
+    list-style: none;
+    margin: 0;
+}
+
+.edit-dropdown-options li {
+    padding: 8px 10px;
+    border-radius: 6px;
+    font-size: 12.5px;
+    font-weight: 500;
+    color: #1e2939;
+    cursor: pointer;
+    transition: background 0.12s ease;
+}
+
+.edit-dropdown-options li:hover {
+    background: #fff1ec;
+}
+
+.edit-dropdown-options li.active {
+    background: #fff1ec;
+    color: #f05a2f;
+    font-weight: 700;
+}
+
+.edit-dropdown-empty {
+    padding: 14px 10px;
+    text-align: center;
+    font-size: 12.5px;
+    color: #9aa4b8;
+}
+
+/* Toast notifikasi (pengganti alert) */
+.edit-toast {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 1200;
+    padding: 12px 18px;
+    border-radius: 10px;
+    color: #ffffff;
+    font-size: 12px;
+    font-weight: 700;
+    box-shadow: 0 10px 24px rgba(10, 20, 60, 0.2);
+}
+
+.edit-toast-success {
+    background: #1d9e75;
+}
+
+.edit-toast-error {
+    background: #e7000b;
 }
 
 @media (max-width: 640px) {

@@ -150,12 +150,12 @@ button {
 }
 
 .summary-card.total .progress-track {
-  background: rgba(3, 78, 162, 0.15);
+  background: #006DC3;
 }
 
 .summary-card.total .progress-fill {
   width: 50% !important;
-  background: #034EA2;
+  background: #006DC3;
 }
 
 /* ======== MENUNGGU CARD ======== */
@@ -536,10 +536,6 @@ button {
     font-size: 11px;
     font-weight: 700;
 }
-
-/* ===========================
-   NOTIFICATION
-=========================== */
 
 .notification-btn {
     position: relative;
