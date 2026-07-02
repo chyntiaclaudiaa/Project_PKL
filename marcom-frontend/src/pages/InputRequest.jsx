@@ -1,9 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from "react";
 import { useNavigate } from 'react-router-dom';
 import API from '../api/axios';
 import Sidebar from '../components/Sidebar';
 import ConfirmModal from '../components/ConfirmModal';
-import { Bell, Save, FileText } from 'lucide-react';
+import { Bell, Save, FileText, ChevronDown, Search } from 'lucide-react';
 import '../style/InputRequest.css';
 
 const DIVISION_OPTIONS = [
@@ -33,6 +33,90 @@ const DIVISION_OPTIONS = [
     'Unit Kantor Eksternal/lain-lain',
 ];
 
+const PLATFORM_OPTIONS = ['Instagram', 'Website', 'YouTube', 'TikTok'];
+
+/**
+ * Dropdown pencarian generik.
+ * Dipakai untuk PIC, Divisi Pengaju, dan Platform Target
+ * supaya tampilan & perilakunya konsisten (satu style untuk semua).
+ */
+const SearchableDropdown = ({
+    label,
+    required,
+    placeholder,
+    value,
+    displayValue,
+    options,
+    search,
+    onSearchChange,
+    isOpen,
+    onToggle,
+    onSelect,
+    containerRef,
+    error,
+}) => {
+    return (
+        <div className="form-group" ref={containerRef}>
+            <label>
+                {label} {required && <span>*</span>}
+            </label>
+
+            <div className={`custom-dropdown ${isOpen ? 'dropdown-open' : ''} ${error ? 'input-error' : ''}`}>
+                <button
+                    type="button"
+                    className="dropdown-toggle"
+                    onClick={onToggle}
+                >
+                    <span className={value ? 'dropdown-value' : 'dropdown-placeholder'}>
+                        {value ? displayValue : placeholder}
+                    </span>
+                    <ChevronDown
+                        size={16}
+                        className={`dropdown-chevron ${isOpen ? 'open' : ''}`}
+                    />
+                </button>
+
+                {isOpen && (
+                    <div className="dropdown-menu">
+                        <div className="dropdown-search">
+                            <Search size={14} />
+                            <input
+                                type="text"
+                                autoFocus
+                                value={search}
+                                onChange={(e) => onSearchChange(e.target.value)}
+                                placeholder="Cari..."
+                            />
+                        </div>
+
+                        <div className="dropdown-options">
+                            {options.length === 0 ? (
+                                <div className="dropdown-empty">
+                                    Tidak ditemukan
+                                </div>
+                            ) : (
+                                options.map((opt) => (
+                                    <div
+                                        key={opt.value}
+                                        className={`dropdown-option ${
+                                            opt.value === value ? 'active' : ''
+                                        }`}
+                                        onClick={() => onSelect(opt.value)}
+                                    >
+                                        {opt.label}
+                                    </div>
+                                ))
+                            )}
+                        </div>
+                    </div>
+                )}
+            </div>
+
+            {error && <small>{error}</small>}
+        </div>
+    );
+};
+
 const InputRequest = () => {
     const navigate = useNavigate();
 
@@ -43,6 +127,18 @@ const InputRequest = () => {
         localStorage.removeItem('user');
         navigate('/login');
     };
+
+    const [isPicDropdownOpen, setIsPicDropdownOpen] = useState(false);
+    const [isPlatformDropdownOpen, setIsPlatformDropdownOpen] = useState(false);
+    const [isDivisionDropdownOpen, setIsDivisionDropdownOpen] = useState(false);
+
+    const [picSearch, setPicSearch] = useState("");
+    const [platformSearch, setPlatformSearch] = useState("");
+    const [divisionSearch, setDivisionSearch] = useState("");
+
+    const picRef = useRef(null);
+    const platformRef = useRef(null);
+    const divisionRef = useRef(null);
 
     const [form, setForm] = useState({
         letter_number: '',
@@ -70,10 +166,34 @@ const InputRequest = () => {
     });
 
     const [connectingGoogle, setConnectingGoogle] = useState(false);
+    const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
+
+    const showToast = (message, type = 'success') => {
+        setToast({ show: true, message, type });
+        setTimeout(() => setToast({ show: false, message: '', type: 'success' }), 3000);
+    };
 
     useEffect(() => {
         getPicUsers();
         getCalendarStatus();
+    }, []);
+
+    // Tutup dropdown ketika klik di luar area dropdown
+    useEffect(() => {
+        const handleClickOutside = (e) => {
+            if (picRef.current && !picRef.current.contains(e.target)) {
+                setIsPicDropdownOpen(false);
+            }
+            if (platformRef.current && !platformRef.current.contains(e.target)) {
+                setIsPlatformDropdownOpen(false);
+            }
+            if (divisionRef.current && !divisionRef.current.contains(e.target)) {
+                setIsDivisionDropdownOpen(false);
+            }
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
     const getPicUsers = async () => {
@@ -112,7 +232,7 @@ const InputRequest = () => {
             window.location.href = response.data.url;
         } catch (err) {
             console.error(err);
-            alert('Gagal membuka halaman koneksi Google.');
+            showToast('Gagal membuka halaman koneksi Google.', 'error');
             setConnectingGoogle(false);
         }
     };
@@ -129,6 +249,23 @@ const InputRequest = () => {
             ...prev,
             [name]: '',
         }));
+    };
+
+    // Handler khusus untuk dropdown custom (PIC, Divisi, Platform)
+    const handleDropdownSelect = (name, value) => {
+        setForm((prev) => ({
+            ...prev,
+            [name]: value,
+        }));
+
+        setErrors((prev) => ({
+            ...prev,
+            [name]: '',
+        }));
+
+        setIsPicDropdownOpen(false);
+        setIsPlatformDropdownOpen(false);
+        setIsDivisionDropdownOpen(false);
     };
 
     const validateForm = () => {
@@ -148,6 +285,12 @@ const InputRequest = () => {
 
         if (!form.requester_division)
             newErrors.requester_division = 'Divisi pengaju wajib dipilih.';
+
+        if (!form.pic_id)
+            newErrors.pic_id = 'PIC wajib dipilih.';
+
+        if (!form.platform_target)
+            newErrors.platform_target = 'Platform target wajib dipilih.';
 
         if (!form.description.trim())
             newErrors.description = 'Deskripsi kebutuhan wajib diisi.';
@@ -189,18 +332,34 @@ const InputRequest = () => {
 
             await getCalendarStatus();
 
-            alert(response.data.message || 'Request berhasil disimpan.');
+            showToast(response.data.message || 'Request berhasil disimpan.', 'success');
 
-            navigate('/anggota/dashboard');
+            setTimeout(() => navigate('/anggota/dashboard'), 1200);
         } catch (err) {
-            alert(
-                err.response?.data?.message ||
-                'Gagal menyimpan request.'
+            showToast(
+                err.response?.data?.message || 'Gagal menyimpan request.',
+                'error'
             );
         } finally {
             setLoading(false);
         }
     };
+
+    // Data untuk masing-masing dropdown (dihitung di luar JSX, bukan di dalam map)
+    const filteredPicOptions = picOptions
+        .filter((pic) => pic.name.toLowerCase().includes(picSearch.toLowerCase()))
+        .map((pic) => ({ value: pic.id, label: pic.name }));
+
+    const selectedPicName =
+        picOptions.find((pic) => String(pic.id) === String(form.pic_id))?.name || '';
+
+    const filteredPlatformOptions = PLATFORM_OPTIONS
+        .filter((p) => p.toLowerCase().includes(platformSearch.toLowerCase()))
+        .map((p) => ({ value: p, label: p }));
+
+    const filteredDivisionOptions = DIVISION_OPTIONS
+        .filter((div) => div.toLowerCase().includes(divisionSearch.toLowerCase()))
+        .map((div) => ({ value: div, label: div }));
 
     return (
         <div className="dashboard-layout" style={{ display: 'flex', minHeight: '100vh' }}>
@@ -209,6 +368,13 @@ const InputRequest = () => {
                 active="request"
                 onLogout={handleLogout}
             />
+
+            {/* Toast */}
+            {toast.show && (
+                <div className={`toast-notif ${toast.type === 'error' ? 'toast-error' : 'toast-success'}`}>
+                    {toast.message}
+                </div>
+            )}
 
             {/* Confirm Modal */}
             {showConfirm && (
@@ -264,30 +430,21 @@ const InputRequest = () => {
                                     )}
                                 </div>
 
-                                <div className="form-group">
-                                    <label>
-                                        PIC yang Menangani
-                                    </label>
-
-                                    <select
-                                        name="pic_id"
-                                        value={form.pic_id}
-                                        onChange={handleChange}
-                                    >
-                                        <option value="">
-                                            -- Pilih PIC --
-                                        </option>
-
-                                        {picOptions.map((pic) => (
-                                            <option
-                                                key={pic.id}
-                                                value={pic.id}
-                                            >
-                                                {pic.name}
-                                            </option>
-                                        ))}
-                                    </select>
-                                </div>
+                                <SearchableDropdown
+                                    label="PIC yang Menangani"
+                                    required
+                                    placeholder="Pilih PIC"
+                                    value={form.pic_id}
+                                    displayValue={selectedPicName}
+                                    options={filteredPicOptions}
+                                    search={picSearch}
+                                    onSearchChange={setPicSearch}
+                                    isOpen={isPicDropdownOpen}
+                                    onToggle={() => setIsPicDropdownOpen((prev) => !prev)}
+                                    onSelect={(value) => handleDropdownSelect('pic_id', value)}
+                                    containerRef={picRef}
+                                    error={errors.pic_id}
+                                />
 
                                 <div className="form-group">
                                     <label>
@@ -311,33 +468,21 @@ const InputRequest = () => {
                                     )}
                                 </div>
 
-                                <div className="form-group">
-                                    <label>
-                                        Platform Target
-                                    </label>
-
-                                    <select
-                                        name="platform_target"
-                                        value={form.platform_target}
-                                        onChange={handleChange}
-                                    >
-                                        <option value="">
-                                            -- Pilih Platform --
-                                        </option>
-                                        <option value="Instagram">
-                                            Instagram
-                                        </option>
-                                        <option value="Website">
-                                            Website
-                                        </option>
-                                        <option value="YouTube">
-                                            YouTube
-                                        </option>
-                                        <option value="TikTok">
-                                            TikTok
-                                        </option>
-                                    </select>
-                                </div>
+                                <SearchableDropdown
+                                    label="Platform Target"
+                                    required
+                                    placeholder="Pilih Platform"
+                                    value={form.platform_target}
+                                    displayValue={form.platform_target}
+                                    options={filteredPlatformOptions}
+                                    search={platformSearch}
+                                    onSearchChange={setPlatformSearch}
+                                    isOpen={isPlatformDropdownOpen}
+                                    onToggle={() => setIsPlatformDropdownOpen((prev) => !prev)}
+                                    onSelect={(value) => handleDropdownSelect('platform_target', value)}
+                                    containerRef={platformRef}
+                                    error={errors.platform_target}
+                                />
 
                                 <div className="form-group">
                                     <label>
@@ -384,41 +529,21 @@ const InputRequest = () => {
                                     )}
                                 </div>
 
-                                <div className="form-group">
-                                    <label>
-                                        Divisi Pengaju <span>*</span>
-                                    </label>
-
-                                    <select
-                                        name="requester_division"
-                                        value={form.requester_division}
-                                        onChange={handleChange}
-                                        className={
-                                            errors.requester_division
-                                                ? 'input-error'
-                                                : ''
-                                        }
-                                    >
-                                        <option value="">
-                                            -- Pilih Divisi --
-                                        </option>
-
-                                        {DIVISION_OPTIONS.map((div) => (
-                                            <option
-                                                key={div}
-                                                value={div}
-                                            >
-                                                {div}
-                                            </option>
-                                        ))}
-                                    </select>
-
-                                    {errors.requester_division && (
-                                        <small>
-                                            {errors.requester_division}
-                                        </small>
-                                    )}
-                                </div>
+                                <SearchableDropdown
+                                    label="Divisi Pengaju"
+                                    required
+                                    placeholder="Pilih Divisi"
+                                    value={form.requester_division}
+                                    displayValue={form.requester_division}
+                                    options={filteredDivisionOptions}
+                                    search={divisionSearch}
+                                    onSearchChange={setDivisionSearch}
+                                    isOpen={isDivisionDropdownOpen}
+                                    onToggle={() => setIsDivisionDropdownOpen((prev) => !prev)}
+                                    onSelect={(value) => handleDropdownSelect('requester_division', value)}
+                                    containerRef={divisionRef}
+                                    error={errors.requester_division}
+                                />
 
                                 <div className="form-group">
                                     <label>
@@ -523,7 +648,6 @@ const InputRequest = () => {
                                 className="save-request-btn"
                                 disabled={loading}
                             >
-                                <Save size={18} />
                                 {loading
                                     ? 'Menyimpan...'
                                     : 'Simpan Request'}

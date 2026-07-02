@@ -9,6 +9,17 @@ import '../style/MyRequests.css';
 
 const STATUS_OPTIONS = ['Semua', 'Menunggu', 'Diproses', 'Revisi', 'Selesai', 'Ditolak'];
 
+// Maps a status label to the color-variable suffix defined in MyRequests.css
+// (--color-menunggu, --color-diproses, --color-revisi, --color-selesai, --color-ditolak, --color-total)
+const FILTER_COLOR_KEY = {
+  Semua: 'total',
+  Menunggu: 'menunggu',
+  Diproses: 'diproses',
+  Revisi: 'revisi',
+  Selesai: 'selesai',
+  Ditolak: 'ditolak',
+};
+
 const formatDate = (dateString) => {
   if (!dateString) return '-';
   return dateString.includes('T') ? dateString.split('T')[0] : dateString;
@@ -76,8 +87,6 @@ function MyRequests() {
     return matchStatus && matchSearch;
   });
 
-  const activeCount = requests.filter((r) => r.status !== 'Selesai').length;
-
   return (
     <div className="member-layout">
       <Sidebar user={user} active="myrequest" onLogout={handleLogout} />
@@ -87,7 +96,6 @@ function MyRequests() {
         <div className="request-page-header">
           <div>
             <h1>Request Saya</h1>
-            <p>{activeCount} aktif</p>
           </div>
           <button
             className="new-request-btn"
@@ -100,18 +108,37 @@ function MyRequests() {
         <div className="my-requests-body">
 
           <div className="request-toolbar">
-            <input
-              type="text"
-              className="search-input"
-              placeholder="Cari judul, nomor surat, kode, platform, PIC..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
+            <div className="search-input-wrapper">
+              <svg
+                className="search-icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M11 19a8 8 0 1 1 0-16 8 8 0 0 1 0 16Zm10 2-4.35-4.35"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+              <input
+                type="text"
+                className="search-input"
+                placeholder="Cari judul, nomor surat, kode, platform, PIC..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+            </div>
+
             <div className="filter-tabs">
               {STATUS_OPTIONS.map((status) => (
                 <button
                   key={status}
-                  className={`filter-tab ${activeFilter === status ? 'active' : ''}`}
+                  className={`filter-tab filter-tab--${FILTER_COLOR_KEY[status]} ${
+                    activeFilter === status ? 'active' : ''
+                  }`}
                   onClick={() => setActiveFilter(status)}
                 >
                   {status}
@@ -213,13 +240,15 @@ function MyRequests() {
           requestId={editRequestId}
           onClose={() => setEditRequestId(null)}
           onUpdated={() => {
+            // Jangan tutup modal di sini — EditRequestModal punya jeda ~800ms
+            // untuk menampilkan toast sukses sebelum memanggil onClose sendiri.
+            // Menutup modal langsung di sini memotong toast tsb.
             getMyRequests();
-            setEditRequestId(null);
           }}
         />
       )}
     </div>
   );
-}  
+}
 
 export default MyRequests;

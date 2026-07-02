@@ -1,9 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { User, Users, ShieldCheck } from 'lucide-react'; 
 import API from '../api/axios';
 import ProfilUser from '../components/ProfilUser'; 
-import UserModal from '../components/UserModal'; // <-- Impor Komponen Baru
+import UserModal from '../components/UserModal'; 
 import logoKecilBankSumut from '../assets/Logo_Kecil_Bank_Sumut.png'; 
+
+// Pastikan path CSS ini sesuai dengan struktur foldermu
+import '../style/atasan_dashboard.css'; 
+import '../style/Sidebar.css'; 
 
 const AdminDashboard = () => {
     const navigate = useNavigate();
@@ -145,19 +150,19 @@ const AdminDashboard = () => {
     };
 
     const renderRoleBadge = (role) => {
-    const baseClasses = "inline-block px-3 py-1 text-[10px] font-bold rounded-lg whitespace-normal text-center leading-tight";
-    
-    if (role === 'admin') 
-        return <span className={`${baseClasses} bg-red-100 text-[#e63946]`}>Administrator</span>;
-    
-    if (role === 'marcom_manager') 
-        return <span className={`${baseClasses} bg-blue-50 text-blue-600`}>Pimpinan Bidang</span>;
-    
-    return <span className={`${baseClasses} bg-green-50 text-green-600`}>Anggota MarCom</span>;
-};
+        const baseClasses = "inline-block px-3 py-1 text-[10px] font-bold rounded-lg whitespace-normal text-center leading-tight";
+        
+        if (role === 'admin') 
+            return <span className={`${baseClasses} bg-red-100 text-[#e63946]`}>Administrator</span>;
+        
+        if (role === 'marcom_manager') 
+            return <span className={`${baseClasses} bg-blue-50 text-blue-600`}>Pimpinan Bidang</span>;
+        
+        return <span className={`${baseClasses} bg-green-50 text-green-600`}>Anggota MarCom</span>;
+    };
 
     return (
-        <div className="flex h-screen w-full bg-[#f4f7fc] font-sans overflow-hidden relative select-none">
+        <div className="flex h-screen w-full bg-[#f4f7fc] font-['Open_Sans',sans-serif] overflow-hidden relative select-none">
             
             {toast.show && (
                 <div className="fixed top-5 right-5 z-50 bg-emerald-500 text-white px-5 py-3 rounded-xl shadow-lg flex items-center space-x-2 border border-emerald-400">
@@ -166,54 +171,97 @@ const AdminDashboard = () => {
                 </div>
             )}
 
-            <div className="w-64 bg-[#0d2757] text-white flex flex-col justify-between p-5 shadow-2xl flex-shrink-0">
+            {/* SIDEBAR - Menggunakan struktur yang sama persis dengan Sidebar.jsx */}
+            <div className="sticky top-0 h-screen w-64 text-white flex flex-col justify-between border-r border-slate-300 sidebar-gradient-bg z-50 shrink-0">
+                {/* TOP SECTION */}
                 <div>
-                    <div className="flex items-center space-x-3 mb-6 mt-2">
-                        <div className="w-9 h-9 flex items-center justify-center flex-shrink-0">
-                            <img src={logoKecilBankSumut} alt="Logo Bank Sumut" className="w-full h-full object-contain" />
-                        </div>
-                        <div>
-                            <h1 className="font-bold text-base leading-tight tracking-wide">Marcom System</h1>
-                            <p className="text-[10px] text-slate-300 font-medium">Marketing Communication</p>
-                        </div>
-                    </div>
-
-                    <div className="bg-[#1a386b] rounded-xl px-4 py-3 mb-8 border border-white/5">
-                        <p className="text-[9px] uppercase tracking-wider font-bold text-slate-400">Role Aktif</p>
-                        <div className="flex items-center space-x-2 mt-1">
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3.5 h-3.5 text-slate-300"><path d="M10 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6ZM3.465 14.493a1.23 1.23 0 0 0 .41 1.412A9.957 9.957 0 0 0 10 18c2.31 0 4.438-.784 6.131-2.1.43-.333.604-.903.408-1.41a7.002 7.002 0 0 0-13.074.003Z" /></svg>
-                            <span className="text-xs font-bold text-white">Administrator</span>
+                    {/* LOGO & BRAND */}
+                    <div className="px-6 py-5 border-b border-white/10 flex items-center gap-3">
+                        <img src={logoKecilBankSumut} alt="MarCom System" className="w-10 h-10 object-contain shrink-0" />
+                        <div className="min-w-0">
+                            <h1 className="text-base font-bold leading-tight tracking-wide">MarCom System</h1>
+                            <p className="text-white/60 text-xs font-light">Marketing Communication</p>
                         </div>
                     </div>
 
-                    <nav className="space-y-2">
-                        <button type="button" onClick={() => setActiveTab('users')} className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all ${activeTab === 'users' ? 'bg-[#e95723]/15 text-[#e95723] shadow-sm' : 'text-slate-300 hover:bg-white/5 hover:text-white'}`}>
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.109A12.318 12.318 0 0 1 8.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0 1 11.964-3.07M12 6.375a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0Zm8.25 2.25a2.625 2.625 0 1 1-5.25 0 2.625 2.625 0 0 1 5.25 0Z" /></svg>
-                            <span>Kelola Pengguna</span>
+                    {/* ROLE AKTIF */}
+                    <div className="mx-4 mt-4 px-4 py-2.5 bg-white/10 rounded-lg border border-white/5">
+                        <p className="text-[10px] uppercase tracking-wider text-white/40 font-semibold">Role Aktif</p>
+                        <div className="flex items-center gap-2 mt-0.5">
+                            <User size={14} strokeWidth={2} className="text-gray-200" />
+                            <span className="text-xs font-bold text-white capitalize">
+                                {adminData?.role?.replace('_', ' ') || 'Administrator'}
+                            </span>
+                        </div>
+                    </div>
+
+                    {/* MENU ITEMS */}
+                    <div className="px-3 space-y-1 mt-6">
+                        <button
+                            onClick={() => setActiveTab('users')}
+                            className={`group w-full flex items-center gap-3 px-2 py-2 rounded-xl transition-all duration-200 ${
+                                activeTab === 'users'
+                                    ? "bg-[#39293C] text-[#EC5D34]"
+                                    : "text-[#9AA8C7] hover:text-orange-500"
+                            }`}
+                        >
+                            <Users
+                                size={22}
+                                className={activeTab === 'users' ? "text-[#EC5D34]" : "text-[#9AA8C7] group-hover:text-orange-500"}
+                            />
+                            <span className="text-sm font-semibold">Kelola Pengguna</span>
                         </button>
-                        
-                        <button type="button" onClick={() => setActiveTab('profile')} className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all ${activeTab === 'profile' ? 'bg-[#e95723]/15 text-[#e95723] shadow-sm' : 'text-slate-300 hover:bg-white/5 hover:text-white'}`}>
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75m-3-7.036A11.959 11.959 0 0 1 3.598 6 11.99 11.99 0 0 0 3 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751A11.956 11.956 0 0 1 12 2.714Z" /></svg>
-                            <span>Profil Admin</span>
+
+                        <button
+                            onClick={() => setActiveTab('profile')}
+                            className={`group w-full flex items-center gap-3 px-2 py-2 rounded-xl transition-all duration-200 ${
+                                activeTab === 'profile'
+                                    ? "bg-[#39293C] text-[#EC5D34]"
+                                    : "text-[#9AA8C7] hover:text-orange-500"
+                            }`}
+                        >
+                            <ShieldCheck
+                                size={22}
+                                className={activeTab === 'profile' ? "text-[#EC5D34]" : "text-[#9AA8C7] group-hover:text-orange-500"}
+                            />
+                            <span className="text-sm font-semibold">Profil Admin</span>
                         </button>
-                    </nav>
+                    </div>
                 </div>
 
-                <div className="border-t border-white/10 pt-4 flex items-center justify-between">
-                    <div className="flex items-center space-x-3 overflow-hidden">
-                        <div className="w-9 h-9 bg-[#e95723] rounded-full flex items-center justify-center font-bold text-white text-sm flex-shrink-0">{adminData.name.charAt(0)}</div>
-                        <div className="overflow-hidden">
-                            <h4 className="text-xs font-bold truncate text-gray-100">{adminData.name}</h4>
-                            <p className="text-[10px] text-slate-400 truncate font-medium">{adminData.jabatan || 'Administrator'}</p>
+                {/* BOTTOM SECTION - PROFILE USER */}
+                <div className="p-4 border-t border-white/10 space-y-3">
+                    <div className="flex items-center justify-between bg-white/5 rounded-xl p-3 border border-white/5">
+                        <div className="flex items-center gap-3 min-w-0">
+                            <div className="w-9 h-9 rounded-full bg-orange-500 flex items-center justify-center font-bold text-white shrink-0">
+                                {adminData?.name?.charAt(0)?.toUpperCase() || "A"}
+                            </div>
+                            <div className="min-w-0">
+                                <p className="font-bold text-xs text-white truncate capitalize" title={adminData?.name}>
+                                    {adminData?.name || "Admin"}
+                                </p>
+                                <p className="text-white/50 text-[10px] truncate capitalize">
+                                    {adminData?.role?.replace('_', ' ') || "Administrator"}
+                                </p>
+                            </div>
                         </div>
+
+                        {/* Tombol Logout */}
+                        <button
+                            onClick={handleLogout}
+                            className="text-white/60 hover:text-orange-400 hover:border-orange-400/40 transition-all border border-white/20 p-2 rounded-lg flex items-center justify-center bg-white/5"
+                            title="Keluar"
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15M12 9l-3 3m0 0 3 3m-3-3h12.75" />
+                            </svg>
+                        </button>
                     </div>
-                    <button type="button" onClick={handleLogout} className="border border-white/20 hover:border-red-400 p-2 rounded-xl text-slate-300 hover:text-red-400 transition bg-transparent">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4"><path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15M12 9l-3 3m0 0 3 3m-3-3h12.75" /></svg>
-                    </button>
                 </div>
             </div>
 
-            <div className="flex-1 flex flex-col overflow-hidden">
+            {/* MAIN CONTENT AREA - Disesuaikan agar berdampingan dengan Sidebar Flex */}
+            <div className="flex-1 flex flex-col overflow-hidden transition-all duration-[250ms]">
                 <header className="px-10 py-6 flex items-center justify-between flex-shrink-0 bg-[#f4f7fc]">
                     <div>
                         <h2 className="text-2xl font-bold text-[#0d2757] tracking-tight">{activeTab === 'users' ? 'Kelola Pengguna' : 'Profil Admin'}</h2>
@@ -296,6 +344,7 @@ const AdminDashboard = () => {
                 </main>
             </div>
 
+            {/* Modals & Alerts */}
             {(isAddModalOpen || isEditModalOpen) && (
                 <UserModal 
                     isOpen={true} 
@@ -317,12 +366,9 @@ const AdminDashboard = () => {
                                     <path fillRule="evenodd" d="M12 1.5a5.25 5.25 0 0 0-5.25 5.25v3a3 3 0 0 0-3 3v6.75a3 3 0 0 0 3 3h10.5a3 3 0 0 0 3-3v-6.75a3 3 0 0 0-3-3v-3c0-2.9-2.35-5.25-5.25-5.25Zm3.75 8.25v-3a3.75 3.75 0 1 0-7.5 0v3h7.5Z" clipRule="evenodd" />
                                 </svg>
                             </div>
-                            
                             <h3 className="text-center text-lg font-bold text-gray-900 mb-1.5">Konfirmasi Keamanan</h3>
                             <p className="text-center text-xs text-slate-500 mb-6 font-medium leading-relaxed">Anda terdeteksi mengubah password pengguna. Sesi ini memerlukan konfirmasi kredensial Admin asli Anda.</p>
-
                             {errorMsg && <div className="mb-5 p-3 bg-red-50 text-red-600 text-xs rounded-xl font-bold text-center border border-red-100">{errorMsg}</div>}
-
                             <form onSubmit={executeUserUpdate}>
                                 <div className="relative mb-6">
                                     <input
@@ -331,20 +377,24 @@ const AdminDashboard = () => {
                                         autoFocus
                                         value={formData.adminPasswordConfirm}
                                         onChange={(e) => setFormData({ ...formData, adminPasswordConfirm: e.target.value })}
-                                        className="w-full bg-slate-50 pl-4 pr-10 py-3 border border-gray-200 focus:border-amber-500 focus:bg-white rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-amber-500/20 text-gray-800 font-medium transition-all [&::-ms-reveal]:hidden [&::-ms-clear]:hidden"
-                                        placeholder="Ketik password admin Anda..."
+                                        className="w-full bg-slate-50 border border-slate-200 text-slate-800 text-sm rounded-xl focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500 block px-4 py-3 outline-none transition-all"
+                                        placeholder="Masukkan password admin Anda"
                                     />
-                                    <button type="button" onClick={() => setShowAdminConfirmPassword(!showAdminConfirmPassword)} className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-amber-600 transition-colors">
+                                    <button 
+                                        type="button" 
+                                        onClick={() => setShowAdminConfirmPassword(!showAdminConfirmPassword)} 
+                                        className="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-400 hover:text-slate-600"
+                                    >
                                         {showAdminConfirmPassword ? (
-                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /><path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" /></svg>
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M3.98 8.223A10.477 10.477 0 0 0 1.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.451 10.451 0 0 1 12 4.5c4.756 0 8.773 3.162 10.065 7.498a10.522 10.522 0 0 1-4.293 5.774M6.228 6.228 3 3m3.228 3.228 3.65 3.65m7.894 7.894L21 21m-3.228-3.228-3.65-3.65m0 0a3 3 0 1 0-4.243-4.243m4.242 4.242L9.813 9.813" /></svg>
                                         ) : (
-                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M3.98 8.223A10.477 10.477 0 0 0 1.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.451 10.451 0 0 1 12 4.5c4.756 0 8.773 3.162 10.065 7.498a10.522 10.522 0 0 1-4.293 5.774M6.228 6.228 3 3m3.228 3.228 3.65 3.65m7.822 7.822 3 3m-3-3-3.65-3.65m0 0a3 3 0 1 0-4.243-4.243m4.242 4.242L9.88 9.88" /></svg>
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" /><path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /></svg>
                                         )}
                                     </button>
                                 </div>
-                                <div className="flex space-x-3">
-                                    <button type="button" onClick={() => { setIsConfirmModalOpen(false); setErrorMsg(''); }} className="flex-1 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-600 text-sm font-bold rounded-xl transition-colors">Kembali</button>
-                                    <button type="submit" className="flex-1 py-2.5 bg-amber-500 hover:bg-amber-600 text-white text-sm font-bold rounded-xl shadow-md transition-colors">Konfirmasi</button>
+                                <div className="flex items-center gap-3">
+                                    <button type="button" onClick={() => { setIsConfirmModalOpen(false); setFormData({ ...formData, adminPasswordConfirm: '' }); setErrorMsg(''); }} className="flex-1 px-4 py-2.5 border border-slate-200 text-slate-600 bg-white hover:bg-slate-50 text-sm font-bold rounded-xl transition-all">Batal</button>
+                                    <button type="submit" className="flex-1 px-4 py-2.5 bg-amber-500 hover:bg-amber-600 text-white text-sm font-bold rounded-xl shadow-sm transition-all">Verifikasi</button>
                                 </div>
                             </form>
                         </div>
@@ -353,22 +403,16 @@ const AdminDashboard = () => {
             )}
 
             {showLogoutAlert && (
-                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[70] p-4">
-                    <div className="bg-white rounded-3xl shadow-2xl w-full max-w-sm overflow-hidden p-8 text-center border border-slate-100">
-                        <div className="w-16 h-16 bg-emerald-100 text-emerald-500 rounded-full flex items-center justify-center mx-auto mb-5 shadow-sm">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-8 h-8">
-                                <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 12.75 6 6 9-13.5" />
-                            </svg>
+                <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-[70] p-4">
+                    <div className="bg-white rounded-3xl shadow-2xl w-full max-w-sm overflow-hidden text-center p-8 border border-slate-100">
+                        <div className="w-16 h-16 rounded-full bg-blue-50 flex items-center justify-center mx-auto mb-5">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-8 h-8 text-blue-500"><path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z" /></svg>
                         </div>
-                        <h3 className="text-xl font-extrabold text-gray-900 mb-2">Password Diubah!</h3>
-                        <p className="text-sm text-slate-500 mb-8 font-medium leading-relaxed">
-                            Untuk alasan keamanan, sesi Anda saat ini diakhiri. Silakan login kembali menggunakan password baru Anda.
-                        </p>
-                        <button 
-                            onClick={handleLogout} 
-                            className="w-full bg-[#0d2757] hover:bg-[#1a386b] text-white text-sm font-bold py-3.5 rounded-xl shadow-md transition-all"
-                        >
-                            OK, Login Ulang
+                        <h3 className="text-xl font-bold text-gray-900 mb-2">Password Diperbarui</h3>
+                        <p className="text-sm text-slate-500 mb-8 font-medium">Anda telah mengubah password akun Anda sendiri. Silakan login kembali dengan kredensial baru.</p>
+                        <button onClick={handleLogout} className="w-full px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold rounded-xl shadow-md transition-all flex items-center justify-center gap-2">
+                            <span>Login Kembali</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4"><path strokeLinecap="round" strokeLinejoin="round" d="M17.25 8.25 21 12m0 0-3.75 3.75M21 12H3" /></svg>
                         </button>
                     </div>
                 </div>

@@ -83,9 +83,6 @@ const UserModal = ({
                             {!isEdit ? 'Tambah Pengguna' : 'Edit Pengguna'}
                         </h3>
                     </div>
-                    <button onClick={onClose} className="text-white/90 hover:text-white text-sm font-bold flex items-center transition-colors">
-                        ✕ Batal
-                    </button>
                 </div>
 
                 <form onSubmit={onSubmit} className="p-6 space-y-4 text-gray-800 relative">

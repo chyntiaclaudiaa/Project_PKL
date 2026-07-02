@@ -31,8 +31,8 @@
 
 .input-header h1 {
     margin: 0;
-    font-size: 18px;
-    font-weight: 800;
+    font-size: 16px;
+    font-weight: 700;
     color: #061b3a;
 }
 
@@ -58,8 +58,8 @@
     align-items: center;
     gap: 10px;
     margin: 0 0 20px 0;
-    font-size: 15px;
-    font-weight: 800;
+    font-size: 14px;
+    font-weight: 700;
     color: #061b3a;
 }
 
@@ -88,6 +88,7 @@
 .form-group {
     display: flex;
     flex-direction: column;
+    position: relative;
 }
 
 .form-group label {
@@ -95,7 +96,7 @@
     align-items: center;
     gap: 8px;
     margin-bottom: 8px;
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 700;
     color: #061b3a;
 }
@@ -112,7 +113,7 @@
     border-radius: 8px;
     background: #fbfcfe;
     color: #061b3a;
-    font-size: 13px;
+    font-size: 12px;
     outline: none;
     transition: border-color 0.2s, box-shadow 0.2s;
     font-family: 'Open Sans', Arial, sans-serif;
@@ -121,14 +122,16 @@
 .form-group input,
 .form-group select {
     height: 40px;
-    padding: 0 12px;
+    padding: 0 14px;
+    font-size: 12px;
+    line-height: 44px;
 }
 
 .form-group textarea {
     height: 120px;
     padding: 12px;
     resize: vertical;
-    line-height: 1.5;
+    line-height: 1.6;
 }
 
 .form-group select {
@@ -169,7 +172,7 @@
     display: flex;
     align-items: center;
     gap: 10px;
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 600;
     color: #061b3a;
     cursor: pointer;
@@ -191,7 +194,7 @@
     align-items: center;
     justify-content: space-between;
     color: #009f4d;
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 700;
     border: none;
     cursor: pointer;
@@ -223,10 +226,10 @@
 }
 
 .save-request-btn {
-    height: 40px;
+    height: 38px;
     border-radius: 8px;
     padding: 0 28px;
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 700;
     cursor: pointer;
     border: none;
@@ -243,6 +246,194 @@
 }
 
 .save-request-btn:hover { background: #df4c25; }
+
+/* ===================================================
+   Custom Searchable Dropdown (PIC, Divisi, Platform)
+   Disamakan dengan style input/select yang sudah ada
+   =================================================== */
+
+.custom-dropdown {
+    position: relative;
+    width: 100%;
+}
+
+.dropdown-toggle {
+    width: 100%;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    border: 1px solid #d9dee7;
+    border-radius: 8px;
+    background: #fbfcfe;
+    color: #061b3a;
+    font-size: 12px;
+    font-family: 'Open Sans', Arial, sans-serif;
+    padding: 0 14px;
+    cursor: pointer;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+}
+
+.dropdown-toggle:hover {
+    border-color: #f0a58c;
+}
+
+.custom-dropdown.dropdown-open .dropdown-toggle,
+.dropdown-toggle:focus {
+    border-color: #f05a2f;
+    background: #ffffff;
+    box-shadow: 0 0 0 3px rgba(240, 90, 47, 0.1);
+}
+
+.custom-dropdown.input-error .dropdown-toggle {
+    border-color: #dc2626;
+    background: #fff5f5;
+}
+
+.dropdown-value {
+    color: #061b3a;
+    font-weight: 400;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.dropdown-placeholder {
+    color: #8a93a3;
+    font-weight: 400;
+}
+
+.dropdown-chevron {
+    color: #f05a2f !important;
+    flex-shrink: 0;
+    stroke-width: 2.5;
+    transition: transform 0.2s ease;
+}
+
+.dropdown-chevron.open {
+    transform: rotate(180deg);
+}
+
+.dropdown-menu {
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    right: 0;
+    background: #ffffff;
+    border: 1px solid #e2e6ee;
+    border-radius: 10px;
+    box-shadow: 0 10px 28px rgba(6, 27, 58, 0.12);
+    z-index: 40;
+    overflow: hidden;
+    animation: dropdownFadeIn 0.15s ease;
+}
+
+@keyframes dropdownFadeIn {
+    from { opacity: 0; transform: translateY(-4px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.dropdown-search {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 14px;
+    border-bottom: 1px solid #eef0f4;
+    background: #fbfcfe;
+}
+
+.dropdown-search svg {
+    color: #8a93a3 !important;
+    stroke-width: 2.5;
+    flex-shrink: 0;
+}
+
+.dropdown-search input {
+    flex: 1;
+    border: none;
+    outline: none;
+    background: transparent;
+    font-size: 12px;
+    font-family: 'Open Sans', Arial, sans-serif;
+    color: #061b3a;
+}
+
+.dropdown-search input::placeholder {
+    color: #b0b7c3;
+}
+
+.dropdown-options {
+    max-height: 220px;
+    overflow-y: auto;
+    padding: 6px;
+}
+
+.dropdown-options::-webkit-scrollbar {
+    width: 6px;
+}
+
+.dropdown-options::-webkit-scrollbar-thumb {
+    background: #e2e6ee;
+    border-radius: 6px;
+}
+
+.dropdown-option {
+    padding: 9px 10px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 500;
+    color: #061b3a;
+    cursor: pointer;
+    transition: background 0.12s ease;
+}
+
+.dropdown-option:hover {
+    background: #fff1ec;
+}
+
+.dropdown-option.active {
+    background: #fff1ec;
+    color: #f05a2f;
+    font-weight: 700;
+}
+
+.dropdown-empty {
+    padding: 16px 10px;
+    text-align: center;
+    font-size: 12px;
+    color: #8a93a3;
+}
+
+.form-group input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+    filter: invert(48%) sepia(79%) saturate(2476%) hue-rotate(360deg) brightness(101%) contrast(101%);
+    cursor: pointer;
+}
+
+/* ===================== Toast ===================== */
+.toast-notif {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 100;
+    padding: 12px 18px;
+    border-radius: 10px;
+    font-size: 12.5px;
+    font-weight: 600;
+    font-family: 'Open Sans', Arial, sans-serif;
+    color: #ffffff;
+    box-shadow: 0 8px 20px rgba(6, 27, 58, 0.18);
+    animation: toastSlideIn 0.2s ease;
+}
+
+.toast-success { background: #16a34a; }
+.toast-error { background: #dc2626; }
+
+@keyframes toastSlideIn {
+    from { opacity: 0; transform: translateX(20px); }
+    to { opacity: 1; transform: translateX(0); }
+}
 
 @media (max-width: 1024px) {
     .input-request-page { margin-left: 0; width: 100%; }

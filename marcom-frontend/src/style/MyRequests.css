@@ -1,3 +1,12 @@
+:root {
+  --color-menunggu: #E3791C;
+  --color-diproses: #006DC3;
+  --color-revisi: #DDC000;
+  --color-selesai: #1D9E75;
+  --color-ditolak: #E7000B;
+  --color-total: #033772;
+}
+
 .request-page-header {
   height: 64px;
   background: #ffffff;
@@ -11,7 +20,7 @@
 .request-page-header h1 {
   margin: 0;
   font-size: 16px;
-  font-weight: 800;
+  font-weight: 700;
   color: #061b3a;
 }
 
@@ -29,7 +38,7 @@
   color: #ffffff;
   padding: 0 18px;
   font-size: 13px;
-  font-weight: 800;
+  font-weight: 700;
   cursor: pointer;
 }
 
@@ -76,35 +85,39 @@
 .request-code-row span {
   color: #98a2b8;
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .request-status {
   font-size: 12px;
-  font-weight: 900;
+  font-weight: 700;
 }
 
 .request-status.waiting {
-  color: #d77900;
+  color: var(--color-menunggu);
 }
 
 .request-status.process {
-  color: #1f4fd6;
+  color: var(--color-diproses);
 }
 
 .request-status.done {
-  color: #13a051;
+  color: var(--color-selesai);
 }
 
 .request-status.revision {
-  color: #dc2626;
+  color: var(--color-revisi);
+}
+
+.request-status.rejected {
+  color: var(--color-ditolak);
 }
 
 .my-request-card h2 {
   margin: 0 0 10px;
   color: #061b3a;
   font-size: 15px;
-  font-weight: 900;
+  font-weight: 700;
 }
 
 .request-meta {
@@ -129,7 +142,7 @@
   border-radius: 8px;
   padding: 0 14px;
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 700;
   cursor: pointer;
 }
 
@@ -185,30 +198,61 @@
   }
 }
 
+/* Removed the old max-width: 900px here — it was leaving a big empty
+   gap on the right since .member-main is wider than that. Body now
+   just fills whatever width the layout gives it. */
 .my-requests-body {
   padding: 24px;
-  max-width: 900px;
+  width: 100%;
 }
 
+/* Search + filter tabs in one row, search bar as a full pill */
 .request-toolbar {
   display: flex;
-  flex-direction: column;
+  align-items: center;
+  flex-wrap: wrap;
   gap: 0.75rem;
   margin-bottom: 1.5rem;
 }
 
+.search-input-wrapper {
+  position: relative;
+  flex: 1 1 260px;
+  min-width: 220px;
+  max-width: 360px;
+}
+
+.search-icon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 16px;
+  height: 16px;
+  color: #98a2b8;
+  pointer-events: none;
+}
+
 .search-input {
   width: 100%;
-  padding: 0.6rem 1rem;
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
-  font-size: 0.9rem;
+  padding: 0.65rem 1rem 0.65rem 2.5rem;
+  border: 1px solid #e3e8f0;
+  border-radius: 999px;
+  background: #ffffff;
+  font-size: 13px;
+  font-weight: 500;
+  color: #061b3a;
   outline: none;
   transition: border-color 0.2s;
 }
 
+.search-input::placeholder {
+  color: #98a2b8;
+  font-weight: 600;
+}
+
 .search-input:focus {
-  border-color: #3b82f6;
+  border-color: #f05a2f;
 }
 
 .filter-tabs {
@@ -221,35 +265,107 @@
   display: flex;
   align-items: center;
   gap: 0.4rem;
-  padding: 0.4rem 0.9rem;
-  border: 1px solid #e2e8f0;
-  border-radius: 20px;
+  padding: 0.55rem 0.9rem;
+  border: 1px solid #e3e8f0;
+  border-radius: 999px;
   background: white;
-  font-size: 0.82rem;
+  font-size: 13px;
+  font-weight: 700;
   color: #64748b;
   cursor: pointer;
   transition: all 0.2s;
-}
-
-.filter-tab:hover {
-  border-color: #3b82f6;
-  color: #3b82f6;
-}
-
-.filter-tab.active {
-  background: #3b82f6;
-  border-color: #3b82f6;
-  color: white;
 }
 
 .filter-count {
   background: rgba(0, 0, 0, 0.12);
   border-radius: 10px;
   padding: 0 6px;
-  font-size: 0.75rem;
+  font-size: 11px;
+  font-weight: 700;
   line-height: 1.4;
 }
 
 .filter-tab.active .filter-count {
-  background: rgba(255, 255, 255, 0.25);
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* Per-status colors, following the design tokens:
+   --color-menunggu, --color-diproses, --color-revisi,
+   --color-selesai, --color-ditolak, --color-total */
+.filter-tab--total {
+  border-color: #dbe3ee;
+  color: var(--color-total);
+}
+.filter-tab--total:hover {
+  border-color: var(--color-total);
+}
+.filter-tab--total.active {
+  background: var(--color-total);
+  border-color: var(--color-total);
+  color: #ffffff;
+}
+
+.filter-tab--menunggu {
+  border-color: #f4d9bc;
+  color: var(--color-menunggu);
+}
+.filter-tab--menunggu:hover {
+  border-color: var(--color-menunggu);
+}
+.filter-tab--menunggu.active {
+  background: var(--color-menunggu);
+  border-color: var(--color-menunggu);
+  color: #ffffff;
+}
+
+.filter-tab--diproses {
+  border-color: #bcdcf4;
+  color: var(--color-diproses);
+}
+.filter-tab--diproses:hover {
+  border-color: var(--color-diproses);
+}
+.filter-tab--diproses.active {
+  background: var(--color-diproses);
+  border-color: var(--color-diproses);
+  color: #ffffff;
+}
+
+.filter-tab--revisi {
+  border-color: #f0e6a8;
+  color: var(--color-revisi);
+}
+.filter-tab--revisi:hover {
+  border-color: var(--color-revisi);
+}
+.filter-tab--revisi.active {
+  background: var(--color-revisi);
+  border-color: var(--color-revisi);
+  color: #ffffff;
+}
+
+.filter-tab--selesai {
+  border-color: #b9e2d3;
+  color: var(--color-selesai);
+}
+.filter-tab--selesai:hover {
+  border-color: var(--color-selesai);
+}
+.filter-tab--selesai.active {
+  background: var(--color-selesai);
+  border-color: var(--color-selesai);
+  color: #ffffff;
+}
+
+.filter-tab--ditolak {
+  border-color: #f5bcc0;
+  color: var(--color-ditolak);
+}
+.filter-tab--ditolak:hover {
+  border-color: var(--color-ditolak);
+}
+.filter-tab--ditolak.active {
+  background: var(--color-ditolak);
+  border-color: var(--color-ditolak);
+  color: #ffffff;
 }

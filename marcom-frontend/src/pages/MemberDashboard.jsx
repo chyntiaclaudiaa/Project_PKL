@@ -2,8 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { PieChart, Pie, Cell, Legend, ResponsiveContainer } from 'recharts';
 import API from '../api/axios';
-import '../style/atasan_dashboard.css'; // Skin disamakan dengan dashboard atasan (font, warna, ukuran)
-import '../style/MemberDashboard.css';
+import '../style/atasan_dashboard.css'; 
 import RequestDetailModal from '../components/RequestDetail';
 import Sidebar from '../components/Sidebar';
 import NotificationPopup from '../components/atasan/NotificationPopup';
@@ -28,6 +27,10 @@ function MemberDashboard() {
   const [isPopupOpen, setIsPopupOpen] = useState(false);
 
   const user = JSON.parse(localStorage.getItem('user'));
+
+  const unreadCount = notifications.filter(
+    (n) => !n.is_read || String(n.is_read) === 'false'
+  ).length;
 
   useEffect(() => {
   getDashboardData();
@@ -157,8 +160,10 @@ function MemberDashboard() {
                 >
                     <Bell size={22} className="text-orange-500 stroke-[2]" />
 
-                    {notifications.some((n) => !n.is_read || String(n.is_read) === 'false') && (
-                        <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-green-500 border-2 border-white rounded-full"></span>
+                    {unreadCount > 0 && (
+                        <span className="absolute -top-1 -right-1 min-w-[16px] h-4 px-1 flex items-center justify-center bg-red-500 border-2 border-white rounded-full text-[9px] font-bold text-white leading-none">
+                            {unreadCount > 9 ? '9+' : unreadCount}
+                        </span>
                     )}
                 </button>
 
@@ -179,8 +184,8 @@ function MemberDashboard() {
         </section>
 
         <section className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-          <div className="bg-white rounded-2xl shadow-sm p-5 border-l-[5px] rounded-l-2xl" style={{ borderLeftColor: 'var(--color-diproses)' }}>
-            <h2 className="text-3xl font-extrabold text-slate-800">{summary.total}</h2>
+          <div className="bg-white rounded-2xl shadow-sm p-5 border-l-[5px] rounded-l-2xl" style={{ borderLeftColor: 'var(--color-total)' }}>
+            <h2 className="text-3xl font-extrabold text-slate-800" style={{ color: 'var(--color-total)' }}>{summary.total}</h2>
             <p className="text-xs text-slate-500 font-medium mt-1.5">Total Request</p>
           </div>
 
@@ -265,7 +270,7 @@ function MemberDashboard() {
       <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
         <span
           className="text-2xl font-black"
-          style={{ color: "var(--color-diproses)" }}
+          style={{ color: "var(--color-total)" }}
         >
           {summary.total}
         </span>
@@ -369,6 +374,8 @@ function MemberDashboard() {
           requestId={selectedRequestId}
           onClose={() => setSelectedRequestId(null)}
           onUpdated={getDashboardData}
+          currentUserId={user?.id}
+          currentUserName={user?.name}
         />
       )}
     </div>
